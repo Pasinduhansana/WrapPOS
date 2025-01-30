@@ -5,14 +5,18 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WrapPOS"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        mc:Ignorable="d" 
+        Title="Wrap POS System" Height="650" Width="1200" WindowStartupLocation="CenterScreen">
     <Grid>
-        <!--#region Header Page Radio Buttons -->
-        <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2" HorizontalAlignment="Right" Margin="0,8,141,0">
-            <RadioButton x:Name="Settings_rd" Content="Settings" FontSize="11" Style="{DynamicResource MaterialDesignFlatLightButton}" Foreground="#FF323232" />
-        </StackPanel>
-        <!--#endregion-->
+        <DockPanel>
+            <!-- Sidebar Navigation -->
+            <StackPanel DockPanel.Dock="Left" Width="200" Background="#2C3E50">
+                <Button Content="Products" Click="Products_Click" Foreground="White" Background="Transparent" />
+                <Button Content="Inventory" Click="Inventory_Click" Foreground="White" Background="Transparent" />
+            </StackPanel>
 
+            <!-- Main Content Area -->
+            <Frame Name="MainFrame" NavigationUIVisibility="Hidden" />
+        </DockPanel>
     </Grid>
 </Window>

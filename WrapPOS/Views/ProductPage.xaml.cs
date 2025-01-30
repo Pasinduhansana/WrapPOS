@@ -13,25 +13,30 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace WrapPOS
+namespace WrapPOS.Views
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for ProductPage.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class ProductPage : Page
     {
-        public MainWindow()
+        public ProductPage()
         {
             InitializeComponent();
         }
-        private void Products_Click(object sender, RoutedEventArgs e)
+        private void AddProduct_Click(object sender, RoutedEventArgs e)
         {
-            MainFrame.Navigate(new Views.ProductPage());
+            MessageBox.Show("Add Product Clicked");
         }
 
-        private void Inventory_Click(object sender, RoutedEventArgs e)
+        private void DeleteProduct_Click(object sender, RoutedEventArgs e)
         {
-            MainFrame.Navigate(new Views.InventoryPage());
+            MessageBox.Show("Delete Product Clicked");
+        }
+
+        private void Export_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Export Clicked");
         }
     }
 }
