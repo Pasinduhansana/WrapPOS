@@ -6,7 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WrapPOS"
         mc:Ignorable="d" 
-        Title="Wrap POS System" Height="650" Width="1200" WindowStartupLocation="CenterScreen">
+        Title="Wrap POS System" Height="680" Width="1200" WindowStartupLocation="CenterScreen">
     <Grid>
         <DockPanel>
             <!-- Sidebar Navigation -->

@@ -5,64 +5,90 @@
       Title="Product Management" Background="White" FontFamily="poppins">
 
     <Grid Margin="20">
-        <StackPanel Orientation="Vertical" Margin="20">
+        <StackPanel Orientation="Vertical" Margin="10">
 
+            
             <!-- Title -->
-            <StackPanel Orientation="Horizontal">
-            <TextBlock Text="Inventory Management" FontSize="28" FontWeight="SemiBold" Foreground="#2C3E50" HorizontalAlignment="left" />
-            <TextBlock Text="Inventory Management" FontSize="28" FontWeight="SemiBold" Foreground="#2C3E50" HorizontalAlignment="left" />
+            <StackPanel Orientation="Vertical" Background="Transparent">
+            <TextBlock Text="Product Management" FontSize="20" FontWeight="SemiBold" Foreground="#2C3E50" HorizontalAlignment="left" />
+                <TextBlock Text="Add your products here and explore the complete product list" FontSize="13" FontWeight="Normal" Foreground="Gray" HorizontalAlignment="left" />
             </StackPanel>
-            <!-- Buttons Section -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
-                <Button Content="Update Selected" Width="150" Height="40" Margin="5" Background="#E67E22" Foreground="White" BorderBrush="#D35400" BorderThickness="1" Click="UpdateItem_Click"/>
-                <Button Content="Delete Selected" Width="150" Height="40" Margin="5" Background="#E74C3C" Foreground="White" BorderBrush="#C0392B" BorderThickness="1" Click="DeleteItem_Click"/>
-            </StackPanel>
+
 
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="250"/>
+                    <ColumnDefinition Width="300"/>
 
                 </Grid.ColumnDefinitions>
 
                 <!-- Add Product Fields -->
-                <StackPanel Orientation="Vertical" Margin="20,-50,0,0" Grid.Column="1" >
 
-                    <!--#region Upload Box -->
-                    <Grid Margin="5" VerticalAlignment="Top" Height="140">
-                        <Rectangle Name="Drop_rectangle" RadiusX="4" RadiusY="4" Margin="0,7,0,4" AllowDrop="True" Fill="WhiteSmoke" StrokeDashArray="4" StrokeThickness="2" StrokeDashCap="Round" Stroke="Silver" Drop="Drop_rectangle_Drop" >
-                        </Rectangle>
-                        <materialDesign:PackIcon Kind="ImageAdd" VerticalAlignment="Center" HorizontalAlignment="Center" Height="20" Width="20" Foreground="Silver" Margin="72,22,68,58"/>
-                        <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,-35" >
-                            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <TextBlock  Text="Drag drop your Image here or" TextAlignment="Center" FontWeight="Normal" Width="150" TextWrapping="Wrap" FontSize="10" Foreground="#4B4B4E"/>
-                                <TextBlock Margin="3,1,3,0" FontSize="9" TextAlignment="Center" Foreground="#4B4B4E" Height="14" VerticalAlignment="Top">
-                                            <Hyperlink Click="Hyperlink_Click" FontSize="9">Choose file</Hyperlink>
-                                </TextBlock>
+                <materialDesign:Card Margin="20,0,0,0" Grid.Column="1" Background="WhiteSmoke" materialDesign:ShadowAssist.ShadowEdges="All" materialDesign:ShadowAssist.ShadowDepth="Depth3" materialDesign:ShadowAssist.Darken="True">
+                <StackPanel Orientation="Vertical" Margin="10" >
+
+                    <!--#region Profile Header Details -->
+                    <StackPanel Orientation="Horizontal" Background="WhiteSmoke" Margin="0,0,0,10" >
+                        <materialDesign:Card  HorizontalAlignment="center" UniformCornerRadius="10" Background="White" Width="100" Margin="12,10,0,10"  Height="100">
+                            <Grid>
+                                <Rectangle>
+                                    <Rectangle.Fill>
+                                        <ImageBrush x:Name="Product_image" ImageSource="/Resources/Product-dummy.jpg" Stretch="UniformToFill"/>
+                                    </Rectangle.Fill>
+                                </Rectangle>
+
+                            <Grid Background="Transparent"  Height="35" VerticalAlignment="Bottom" AllowDrop="True" >
+                                <Border Height="46" VerticalAlignment="Bottom" Margin="1,0" Background="Black"  Opacity="0.5"/>
+                                <Button FontSize="10" FontWeight="Normal" Foreground="White" Content="Change Image" Style="{DynamicResource MaterialDesignToolButton}" Width="Auto" Height="20" Padding="0" Click="Product_image_change">
+                                </Button>
+                            </Grid>
+                            </Grid>
+                    </materialDesign:Card>
+                        <Grid Margin="10"  VerticalAlignment="Center">
+
+                            <StackPanel Orientation="Vertical">                            
+                                <StackPanel Orientation="Vertical" HorizontalAlignment="Left">
+                                <Label Content="Net Profit" FontSize="12" FontWeight="SemiBold"/>
+                                 <Label x:Name="net_profit_lbl" Content="Net Profit" FontSize="10" FontWeight="Normal" Margin="0,-10,0,0"/>
+                                </StackPanel>
+
+                                <StackPanel Orientation="Vertical" HorizontalAlignment="Left">
+                                    <Label Content="100 Units Profit" FontSize="12" FontWeight="SemiBold"/>
+                                    <Label x:Name="profit_100_lbl" Content="Net Profit" FontSize="10" FontWeight="Normal" Margin="0,-10,0,0"/>
+                                </StackPanel>
                             </StackPanel>
+
                         </Grid>
-                    </Grid>
+                    
+                    </StackPanel>
+
+
+
+
                     <!--#endregion-->
 
-                    <TextBox Name="ProductNameTextBox"  materialDesign:HintAssist.Hint ="Product Name" Width="300" Height="30" Margin="0,5" />
-                    <TextBox Name="BuyPriceTextBox" materialDesign:HintAssist.Hint ="Buy Price" Width="300" Height="30" Margin="0,5" />
-                    <TextBox Name="SellPriceTextBox" materialDesign:HintAssist.Hint ="Sell Price" Width="300" Height="30" Margin="0,5" />
-                    <TextBox Name="StockTextBox" materialDesign:HintAssist.Hint ="Stock" Width="300" Height="30" Margin="0,5" />
-                    <TextBox Name="UnitsTextBox" materialDesign:HintAssist.Hint ="Weight (g)" Width="300" Height="30" Margin="0,5" />
+                    <TextBox Name="ProductNameTextBox"  materialDesign:HintAssist.Hint ="Product Name" Width="Auto" Height="35" Margin="0,5" Padding="5,10,5,0" />
+                    <TextBox Name="ProductDescriptionTextBox"  materialDesign:HintAssist.Hint ="Product Description" Width="Auto" Height="auto" MinHeight="35" Margin="0,5" Padding="5,10,5,0" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" />
+                    <TextBox Name="BuyPriceTextBox" materialDesign:HintAssist.Hint ="Buy Price" Width="Auto" Height="35" Margin="0,5" Padding="5,10,5,0"/>
+                    <TextBox Name="SellPriceTextBox" materialDesign:HintAssist.Hint ="Sell Price" Width="Auto" Height="35" Margin="0,5" Padding="5,10,5,0"/>
 
                     <!-- Unit of Measurement Dropdown -->
-                    <ComboBox Name="UOMComboBox" Width="300" Height="40" Margin="0,5">
-                        <ComboBoxItem Content="Kg" />
+                    <ComboBox materialDesign:HintAssist.Hint="Select UOM" Name="UOMComboBox" Style="{DynamicResource MaterialDesignComboBox}" Width="Auto" Height="35" Margin="0,5" Padding="5,10,5,0">
+                        <ComboBoxItem Content="Kilogram" />
                         <ComboBoxItem Content="Gram" />
-                        <ComboBoxItem Content="Piece" />
+                        <ComboBoxItem Content="Pcs" />
                     </ComboBox>
 
-                    <Button Content="Add Product" Width="auto" Style="{DynamicResource MaterialDesignFlatLightBgButton}" Height="40" Background="#42b490" Foreground="White" BorderBrush="#1b929a" BorderThickness="1" Click="AddProduct_Click" />
+                    <TextBox Name="StockTextBox" materialDesign:HintAssist.Hint ="Stock" Width="Auto" Height="35" Margin="0,5" Padding="5,10,5,0"/>
+                    <TextBox Name="UnitsTextBox" materialDesign:HintAssist.Hint ="Weight (g)" Width="Auto" Height="35" Margin="0,5" Padding="5,10,5,0"/>
+
+                    <Button Content="Add Product" Width="auto" Style="{DynamicResource MaterialDesignFlatLightBgButton}" Height="35" Margin="0,20,0,0" Background="#42b490" Foreground="White" BorderBrush="#1b929a" BorderThickness="1" Click="AddProduct_Click" />
                 </StackPanel>
+                </materialDesign:Card>
 
                 <!-- Products List Section -->
 
-                <ListView Name="InventoryListView" Grid.Column="0" Margin="0,20,0,20" Height="400" Width="672"  SelectionMode="Single" ItemsSource="{Binding Products}">
+                <ListView x:Name="InventoryListView" Grid.Column="0" Margin="0,20,0,20" Height="400" Width="672"  SelectionMode="Single" ItemsSource="{Binding Products}">
                     <ListView.View>
                         <GridView>
                             <GridViewColumn Header="ID" DisplayMemberBinding="{Binding ProductId}" Width="50"/>

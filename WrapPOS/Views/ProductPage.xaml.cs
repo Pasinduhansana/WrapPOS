@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -37,6 +38,30 @@ namespace WrapPOS.Views
         private void Export_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("Export Clicked");
+        }
+
+        private void Product_image_change(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                OpenFileDialog dialog = new OpenFileDialog();
+                dialog.Filter = "Image files|*.bmp;*.jpg;*.jpeg;*.png;*.gif;*.tiff";
+                dialog.Title = "Please select file to upload as product image";
+                dialog.RestoreDirectory = true;
+
+                List<string> Imported_Column_List = new List<string>();
+
+                if (dialog.ShowDialog() == true)
+                {
+                    Product_image.ImageSource = new BitmapImage(new Uri(dialog.FileName));
+                }
+
+            }
+            catch (Exception e1)
+            {
+
+                MessageBox.Show(e1.Message + ". Please Try again !", "Information", MessageBoxButton.OKCancel, MessageBoxImage.Information);
+            }
         }
     }
 }
