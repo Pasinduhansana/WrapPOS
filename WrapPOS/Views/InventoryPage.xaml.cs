@@ -7,6 +7,25 @@ using WrapPOS.Models;
 using System.Collections.ObjectModel;
 using WrapPOS.Data;
 using Microsoft.Win32;
+using System.Linq;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Windows.Data;
+using Microsoft.Xaml.Behaviors.Layout;
+using System.Text;
+using System.Threading.Tasks;
+using System.Web.UI.WebControls;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+using System.Xml.Linq;
+using Path = System.IO.Path;
+using WrapPOS.Views;
+using OfficeOpenXml;
+using ClosedXML.Excel;
 
 namespace WrapPOS.Views
 {
@@ -18,251 +37,314 @@ namespace WrapPOS.Views
         //DatabaseService databaseservice = new DatabaseService();
         private static string dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "pos_database.db");
         Product product = new Product();
+        Product selectedProduct = new Product();
+        Inventory inventory = new Inventory();
         public ObservableCollection<Product> Products { get; set; }
+        public ObservableCollection<Product> filteredProducts { get; set; }
+        public ObservableCollection<Inventory> Inventories { get; set; }
         private DatabaseService _databaseService;
+        private BackgroundWorker _backgroundWorker;
+        private CollectionViewSource CollectionView;
 
         public InventoryPage()
         {
-           
+
+            _backgroundWorker = new BackgroundWorker
+            {
+                WorkerReportsProgress = true,
+                WorkerSupportsCancellation = true
+            };
+            _backgroundWorker.DoWork += _backgroundWorker_DoWork;
+            _backgroundWorker.ProgressChanged += _backgroundWorker_ProgressChanged;
+            _backgroundWorker.RunWorkerCompleted += BackgroundWorker_RunWorkerCompleted;
+
+
             InitializeComponent();
             _databaseService = new DatabaseService();
             Products = new ObservableCollection<Product>();
-            LoadData();
+            Inventories = new ObservableCollection<Inventory>();
+            _backgroundWorker.RunWorkerAsync();
+
+            CollectionView = new CollectionViewSource { Source = Inventories };
+            CollectionView.View.Filter = FilterInventory; // Set filter logic
+            InventoryListView.ItemsSource = CollectionView.View;
 
         }
 
-        private void LoadData()
+        private void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            // Get all products from the database
+
+        }
+
+        private void _backgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+
+        }
+
+        private void _backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            Load_Func();
+        }
+
+        private void Load_Func()
+        {
+            var pinventoryFromDb = _databaseService.GetInventoryItems();
             var productsFromDb = _databaseService.GetProducts();
 
-            // Clear the ObservableCollection and add products
-            Products.Clear();
-            foreach (var product in productsFromDb)
-            {
-                Products.Add(product);
-            }
-
-            // Set the ItemsSource for the ListView (already bound in XAML)
-            InventoryListView.ItemsSource = Products;
-        }
-
-        private void AddItem_Click(object sender, RoutedEventArgs e)
-        {
-            var newProduct = new Product
-            {
-                Name = "New Product",
-                BuyPrice = 0.00m,
-                SellPrice = 0.00m,
-                Stock = 0,
-                Units = 0.00m, // Matching with the Product class
-                UOM = "Unit",  // Default value for Unit of Measure
-                ImagePath = "default.png"
-            };
-
-            try
-            {
-                MessageBox.Show(dbPath);
-                using (var connection = new SQLiteConnection($"Data Source={dbPath}"))
+            Application.Current.Dispatcher.Invoke(() =>
                 {
-                    connection.Open();
-                    var command = connection.CreateCommand();
-                    command.CommandText =
-                    @"
-                        INSERT INTO Products (Name, BuyPrice, SellPrice, Stock, ImagePath, Units, UOM)
-                        VALUES ($name, $buyPrice, $sellPrice, $stock, $imagePath, $units, $uom);
-                    ";
-                    command.Parameters.AddWithValue("$name", newProduct.Name);
-                    command.Parameters.AddWithValue("$buyPrice", newProduct.BuyPrice);
-                    command.Parameters.AddWithValue("$sellPrice", newProduct.SellPrice);
-                    command.Parameters.AddWithValue("$stock", newProduct.Stock);
-                    command.Parameters.AddWithValue("$imagePath", (object)newProduct.ImagePath ?? DBNull.Value);
-                    command.Parameters.AddWithValue("$units", newProduct.Units);
-                    command.Parameters.AddWithValue("$uom", newProduct.UOM);
-                    command.ExecuteNonQuery();
-                }
-                //databaseservice.AddProduct(newProduct);  // Call the previously created AddProduct function
-                System.Windows.MessageBox.Show("New product added successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error adding product: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-
-        private void UpdateItem_Click(object sender, RoutedEventArgs e)
-        {
-            if (InventoryListView.SelectedItem is Product selectedProduct)
-            {
-                selectedProduct.Name = "Updated Product";
-                selectedProduct.BuyPrice += 5.00m;
-                selectedProduct.SellPrice += 10.00m;
-                selectedProduct.Stock += 10;
-                selectedProduct.Units += 50.00m;
-                selectedProduct.UOM = "Updated UOM";
-
-                try
-                {
-                   // databaseservice.UpdateProduct(selectedProduct);  // Call the service function
-
-                    MessageBox.Show("Product updated successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error updating product: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-            else
-            {
-                MessageBox.Show("Please select a product to update.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-
-        private void DeleteItem_Click(object sender, RoutedEventArgs e)
-        {
-            if (InventoryListView.SelectedItem is Product selectedProduct)
-            {
-                var result = MessageBox.Show($"Are you sure you want to delete {selectedProduct.Name}?",
-                                             "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-                if (result == MessageBoxResult.Yes)
-                {
-                    try
+                    Inventories.Clear();
+                    foreach (var item in pinventoryFromDb)
                     {
-                        _databaseService.DeleteProduct(selectedProduct.ProductId);
+                        Inventories.Add(item);
+                    }
 
-                        // Optionally, remove the product from the ListView after deletion
-                        var productToRemove = InventoryListView.SelectedItem as Product;
-                        if (productToRemove != null)
+                    Products.Clear();
+                    foreach (var product in productsFromDb)
+                    {
+                        Products.Add(product);
+                    }
+
+                    SuggestionsListBox.ItemsSource = Products.Select(p => p.Name).ToList();
+                
+                });
+
+        }
+
+
+        private void ProductComboBox_KeyUp(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            var searchText = ProductTextBox.Text.ToLower();
+
+            // Filter the products based on the entered text
+            filteredProducts = new ObservableCollection<Product>(
+                Products.Where(p => p.Name.ToLower().Contains(searchText) ||
+                                    p.Description.Contains(searchText) ||
+                                    p.ProductId.ToString().ToLower().Contains(searchText))
+            );
+
+            // Bind the filtered products to the ListBox
+            SuggestionsListBox.ItemsSource = filteredProducts.Select(p => p.Name).ToList();
+
+            // Show the ListBox if there are filtered items
+            SuggestionsListBox.Visibility = filteredProducts.Select(p => p.Name).ToList().Any() ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void ProductComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (SuggestionsListBox.SelectedItem is string selectedProductName)
+            {
+                selectedProduct = Products.FirstOrDefault(p => p.Name == selectedProductName);
+                
+                if (selectedProduct != null)
+                {
+                    ProductTextBox.Text = selectedProduct.Name;
+                    BarcodeTextBox.Text = selectedProduct.Barcode;
+
+                    ProductTextBox.Text = selectedProduct.Name;
+
+                    // Update product details inside the card
+                    ProductNameTextBlock.Text = selectedProduct.Name;
+                    ProductDescriptionTextBlock.Text = selectedProduct.Description;
+                    ProductBarcodeTextBlock.Text = "Barcode: " + selectedProduct.Barcode;
+                    ProductPriceTextBlock.Text = "Price: LKR " + selectedProduct.SellPrice.ToString("F2");
+
+                    // Set the Product Image (assuming the image URL/path is stored in the Product object)
+                    if (!string.IsNullOrEmpty(selectedProduct.ImagePath))
+                    {
+                        string productImage = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, selectedProduct.ImagePath);
+
+                        if (File.Exists(productImage))
                         {
-                            var productList = (ObservableCollection<Product>)InventoryListView.ItemsSource;
-                            productList.Remove(productToRemove);
+                            ProductImage.ImageSource = new BitmapImage(new Uri(productImage, UriKind.Absolute));
                         }
-
-                        MessageBox.Show("Product deleted successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error deleting product: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                }
-            }
-            else
-            {
-                MessageBox.Show("Please select a product to delete.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
-        }
-
-
-
-        private void ExportInventory_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Export Inventory Clicked");
-            // Implement export logic to CSV or Excel
-        }
-
-        private void AddProduct_Click(object sender, RoutedEventArgs e)
-        {
-
-            string name = ProductNameTextBox.Text;
-            string buyPriceText = BuyPriceTextBox.Text;
-            string sellPriceText = SellPriceTextBox.Text;
-            string stockText = StockTextBox.Text;
-            string unitsText = UnitsTextBox.Text;
-            var uom = UOMComboBox.SelectedItem as ComboBoxItem;
-
-            if (string.IsNullOrWhiteSpace(name) ||
-                string.IsNullOrWhiteSpace(buyPriceText) ||
-                string.IsNullOrWhiteSpace(sellPriceText) ||
-                string.IsNullOrWhiteSpace(stockText) ||
-                string.IsNullOrWhiteSpace(unitsText) ||
-                uom == null)
-            {
-                MessageBox.Show("Please fill all fields before submitting.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
-            if (!decimal.TryParse(buyPriceText, out decimal buyPrice) ||
-                !decimal.TryParse(sellPriceText, out decimal sellPrice) ||
-                !int.TryParse(stockText, out int stock) ||
-                !decimal.TryParse(unitsText, out decimal units))
-            {
-                MessageBox.Show("Please enter valid numbers for Price, Stock, and Weight.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-
-            // Add the product to the database or ObservableCollection
-            var newProduct = new Product
-            {
-                Name = name,
-                BuyPrice = buyPrice,
-                SellPrice = sellPrice,
-                Stock = stock,
-                Units = units,
-                UOM = uom.Content.ToString() // Get the selected UOM value
-            };
-
-            // Call your database service to save the new product
-            var databaseService = new DatabaseService();
-            databaseService.AddProduct(newProduct);
-
-            MessageBox.Show("Product added successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-
-            // Optionally clear the fields after adding the product
-            ProductNameTextBox.Clear();
-            BuyPriceTextBox.Clear();
-            SellPriceTextBox.Clear();
-            StockTextBox.Clear();
-            UnitsTextBox.Clear();
-            UOMComboBox.SelectedIndex = -1;
-        }
-
-        private void Hyperlink_Click(object sender, RoutedEventArgs e)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Multiselect = true;
-            openFileDialog.Filter = "All files (*.*)|*.*|Text files (*.txt)|*.txt|PDF files (*.pdf)|*.pdf|Excel files (*.xls;*.xlsx;*.xlsm)|*.xls;*.xlsx;*.xlsm";
-
-            if (openFileDialog.ShowDialog() == true)
-            {
-                string[] selectedFiles = openFileDialog.SafeFileNames;
-                string[] sourceFiles = openFileDialog.FileNames;
-
-                string destinationFolder = AppDomain.CurrentDomain.BaseDirectory + "\\Attachments\\" + product.ProductId;
-
-                if (!Directory.Exists(destinationFolder))
-                {
-                    Directory.CreateDirectory(destinationFolder);
-                }
-
-
-                foreach (string sourcefile in sourceFiles)
-                {
-                    string selectedFile = System.IO.Path.GetFileName(sourcefile);
-                    string destinationFile = System.IO.Path.Combine(destinationFolder, selectedFile);
-
-                    // Check if the file already exists
-                    if (File.Exists(destinationFile))
-                    {
-                        var result = MessageBox.Show($"The file '{selectedFile}' already exists. Do you want to overwrite it?", "File exists", MessageBoxButton.YesNoCancel);
-                        if (result == MessageBoxResult.Yes)
+                        else
                         {
-                            File.Copy(sourcefile, destinationFile, true);
+                            // Set a default resource image if file not found
+                            ProductImage.ImageSource = new BitmapImage(new Uri("pack://application:,,,/Resources/default.jpg"));
                         }
                     }
                     else
                     {
-                        File.Copy(sourcefile, destinationFile);
-
+                        // Set a default resource image if path is null
+                        ProductImage.ImageSource = new BitmapImage(new Uri("pack://application:,,,/Resources/default.jpg"));
                     }
+
+
                 }
+                SuggestionsListBox.Visibility = Visibility.Collapsed; // Hide the ListBox after selection
             }
         }
 
-        private void Drop_rectangle_Drop(object sender, DragEventArgs e)
+        private void ScanProduct(object sender, RoutedEventArgs e)
         {
+            try
+            {
+                string scannedBarcode = BarcodeTextBox.Text.Trim();
 
+                if (!string.IsNullOrEmpty(scannedBarcode))
+                {
+                    Product foundProduct = Products.FirstOrDefault(p => p.Barcode == scannedBarcode);
+
+                    if (foundProduct != null)
+                    {
+                        SuggestionsListBox.SelectedItem = foundProduct.Name;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Product not found.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error scanning product: " + ex.Message);
+            }
+        }
+
+        private void AddInventory_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (SuggestionsListBox.SelectedItem is string selectedProductName && int.TryParse(QuantityTextBox.Text, out int quantity))
+                {
+
+                    Inventory newInventory = new Inventory
+                    {
+                        ProductId = selectedProduct.ProductId,
+                        Quantity = quantity,
+                        PurchaseDate = PurchaseDatePicker.SelectedDate ?? DateTime.Now,
+                        ExpiryDate = ExpiryDatePicker.SelectedDate
+                    };
+
+                    _databaseService.AddInventory(newInventory);
+                    
+                    _backgroundWorker.RunWorkerAsync();
+                    MessageBox.Show("Inventory added successfully.");
+                }
+                else
+                {
+                    MessageBox.Show("Please select a product and enter a valid quantity.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error adding inventory: " + ex.Message);
+            }
+        }
+
+        private void EditButton_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as System.Windows.Controls.Button;
+            var inventoryId = (int)button.Tag;
+
+            // Your edit logic here (e.g., open an edit dialog, etc.)
+            MessageBox.Show($"Edit Inventory with ID: {inventoryId}");
+        }
+
+        private void DeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as System.Windows.Controls.Button;
+            var inventoryId = (int)button.Tag;
+
+            _databaseService.DeleteInventory(inventoryId);
+            // Your delete logic here (e.g., delete from database, etc.)
+            MessageBox.Show($"Delete Inventory with ID: {inventoryId}");
+        }
+
+
+        private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            CollectionView.View.Refresh();
+        }
+        private bool FilterInventory(object item)
+        {
+            if (item is Inventory inventory)
+            {
+                string filterText = SearchBox.Text.ToLower();
+                return string.IsNullOrEmpty(filterText) ||
+                       inventory.Product.Description.Contains(filterText) ||
+                       inventory.Product.Name.ToLower().Contains(filterText) ||
+                       inventory.Product.Barcode.ToLower().Contains(filterText) ||
+                       inventory.Product.SupplierName.ToLower().Contains(filterText) ||
+                       inventory.Product.Colour.ToLower().Contains(filterText) ||
+                       inventory.Product.Type.ToLower().Contains(filterText) ||
+                       inventory.Product.ProductId.ToString().ToLower().Contains(filterText); ;
+            }
+            return false;
+        }
+
+        private void ProductTextBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            SuggestionsListBox.Visibility = Visibility.Collapsed;
+        }
+
+        private void ExportButton_Click(object sender, RoutedEventArgs e)
+        {
+            var inventoryitems = Inventories; // Replace with the actual list of products
+
+            // Create a new Excel package
+            using (var workbook = new XLWorkbook())
+            {
+                // Add a worksheet to the package
+                var worksheet = workbook.Worksheets.Add("Inventory");
+
+                // Add header row
+                worksheet.Cell(1, 1).Value = "Inventory ID";
+                worksheet.Cell(1, 2).Value = "Product ID";
+                worksheet.Cell(1, 3).Value = "Product Name";
+                worksheet.Cell(1, 4).Value = "Product Description";
+                worksheet.Cell(1, 5).Value = "Stock";
+                worksheet.Cell(1, 6).Value = "Purchase Date";
+                worksheet.Cell(1, 7).Value = "Expiry Date";
+                worksheet.Cell(1, 8).Value = "Buy Price";
+                worksheet.Cell(1, 9).Value = "Sell Price";
+                worksheet.Cell(1, 10).Value = "Units";
+                worksheet.Cell(1, 11).Value = "UOM";
+                worksheet.Cell(1, 12).Value = "Supplier Name";
+                worksheet.Cell(1, 13).Value = "Type";
+                worksheet.Cell(1, 14).Value = "Discount";
+                worksheet.Cell(1, 15).Value = "Colour";
+                worksheet.Cell(1, 16).Value = "Barcode";
+
+
+                // Add product data to the sheet
+                int row = 2;
+                foreach (var item in inventoryitems)
+                {
+                    worksheet.Cell(row, 1).Value = item.InventoryId;
+                    worksheet.Cell(row, 2).Value = item.ProductId;
+                    worksheet.Cell(row, 3).Value = item.Product.Name;
+                    worksheet.Cell(row, 4).Value = item.Product.Description;
+                    worksheet.Cell(row, 5).Value = item.Quantity;
+                    worksheet.Cell(row, 6).Value = item.PurchaseDate;
+                    worksheet.Cell(row, 7).Value = item.ExpiryDate;
+                    worksheet.Cell(row, 8).Value = item.Product.BuyPrice;
+                    worksheet.Cell(row, 9).Value = item.Product.SellPrice;
+                    worksheet.Cell(row, 10).Value = item.Product.Units;
+                    worksheet.Cell(row, 11).Value = item.Product.UOM;
+                    worksheet.Cell(row, 12).Value = item.Product.SupplierName;
+                    worksheet.Cell(row, 13).Value = item.Product.Type;
+                    worksheet.Cell(row, 14).Value = item.Product.Discount;
+                    worksheet.Cell(row, 15).Value = item.Product.Colour;
+                    worksheet.Cell(row, 16).Value = item.Product.Barcode;
+                    row++;
+                }
+
+                // Save the Excel file
+                SaveFileDialog saveFileDialog = new SaveFileDialog
+                {
+                    Filter = "Excel Files|*.xlsx",
+                    FileName = "Inventory.xlsx"
+                };
+
+                if (saveFileDialog.ShowDialog() == true)
+                {
+                    var filePath = saveFileDialog.FileName;
+                    workbook.SaveAs(filePath);
+                    MessageBox.Show("Inventory exported successfully!", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
         }
     }
 }

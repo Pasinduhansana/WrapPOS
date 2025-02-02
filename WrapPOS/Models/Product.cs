@@ -11,6 +11,9 @@ namespace WrapPOS.Models
         public string Name { get; set; }
 
         [Required]
+        public string Description { get; set; }
+
+        [Required]
         public decimal BuyPrice { get; set; }
 
         [Required]
@@ -26,5 +29,18 @@ namespace WrapPOS.Models
 
         [Required]
         public string UOM { get; set; }
+
+        public string SupplierName { get; set; }
+
+        [Required]
+        public string Type { get; set; }
+
+
+        public double Discount { get; set; }
+
+        public string Colour { get; set; }
+
+        public string Barcode { get; set; }
     }
 }
+    

@@ -1,20 +1,46 @@
-﻿<Page x:Class="WrapPOS.Views.ProductPage"
-      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-       xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-      Title="Product Management" Background="White" FontFamily="poppins">
+﻿    <Page x:Class="WrapPOS.Views.ProductPage"
+          xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+          xmlns:local="clr-namespace:WrapPOS.Converters"
+           xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+          Title="Product Management" Background="White" FontFamily="poppins" >
 
-    <Grid Margin="20">
+    <Page.Resources>
+        <local:ProportionalWidthConverter x:Key="ProportionalWidthConverter"/>
+    </Page.Resources>
+
+    <Grid Margin="20" VerticalAlignment="Stretch">
         <StackPanel Orientation="Vertical" Margin="10">
 
             
             <!-- Title -->
+            <Grid HorizontalAlignment="Stretch">
             <StackPanel Orientation="Vertical" Background="Transparent">
             <TextBlock Text="Product Management" FontSize="20" FontWeight="SemiBold" Foreground="#2C3E50" HorizontalAlignment="left" />
                 <TextBlock Text="Add your products here and explore the complete product list" FontSize="13" FontWeight="Normal" Foreground="Gray" HorizontalAlignment="left" />
             </StackPanel>
 
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <TextBox x:Name="SearchBox"  Width="350" Margin="10" Height="30" materialDesign:HintAssist.Hint="Search..." TextChanged="SearchBox_TextChanged"/>
 
+                <Button x:Name="ExportButton" 
+                    Content="{materialDesign:PackIcon Kind=FileExcel}"
+                        Style="{DynamicResource MaterialDesignIconButton}"
+                        Width="50" Height="50" 
+                        HorizontalAlignment="Center" 
+                        VerticalAlignment="Top"
+                        FontSize="25"
+                        Padding="0"
+                        Foreground="LimeGreen"
+                        ToolTip="Export to Excel"
+                        Margin="10"
+                        Click="ExportButton_Click">
+                    
+                </Button>
+                </StackPanel>
+
+            </Grid>
+            
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -24,79 +50,260 @@
 
                 <!-- Add Product Fields -->
 
-                <materialDesign:Card Margin="20,0,0,0" Grid.Column="1" Background="WhiteSmoke" materialDesign:ShadowAssist.ShadowEdges="All" materialDesign:ShadowAssist.ShadowDepth="Depth3" materialDesign:ShadowAssist.Darken="True">
-                <StackPanel Orientation="Vertical" Margin="10" >
+                <materialDesign:Card Margin="20,0,0,0" Grid.Column="1" Background="White" materialDesign:ShadowAssist.ShadowEdges="All"  materialDesign:ShadowAssist.ShadowDepth="Depth3" materialDesign:ShadowAssist.Darken="True" UniformCornerRadius="20">
+                    <StackPanel Orientation="Vertical" Margin="10" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"  >
 
-                    <!--#region Profile Header Details -->
-                    <StackPanel Orientation="Horizontal" Background="WhiteSmoke" Margin="0,0,0,10" >
-                        <materialDesign:Card  HorizontalAlignment="center" UniformCornerRadius="10" Background="White" Width="100" Margin="12,10,0,10"  Height="100">
-                            <Grid>
-                                <Rectangle>
-                                    <Rectangle.Fill>
-                                        <ImageBrush x:Name="Product_image" ImageSource="/Resources/Product-dummy.jpg" Stretch="UniformToFill"/>
-                                    </Rectangle.Fill>
-                                </Rectangle>
+                            <!--#region Profile Header Details -->
+                            <StackPanel Orientation="Horizontal" Background="WhiteSmoke" Margin="0,0,0,10">
+                                <materialDesign:Card HorizontalAlignment="Center" UniformCornerRadius="10" Background="White" Width="100" Margin="12,10,0,10" Height="100">
+                                    <Grid>
+                                        <Rectangle>
+                                            <Rectangle.Fill>
+                                                <ImageBrush x:Name="Product_image" ImageSource="/Resources/default.jpg" Stretch="UniformToFill"/>
+                                            </Rectangle.Fill>
+                                        </Rectangle>
 
-                            <Grid Background="Transparent"  Height="35" VerticalAlignment="Bottom" AllowDrop="True" >
-                                <Border Height="46" VerticalAlignment="Bottom" Margin="1,0" Background="Black"  Opacity="0.5"/>
-                                <Button FontSize="10" FontWeight="Normal" Foreground="White" Content="Change Image" Style="{DynamicResource MaterialDesignToolButton}" Width="Auto" Height="20" Padding="0" Click="Product_image_change">
-                                </Button>
-                            </Grid>
-                            </Grid>
-                    </materialDesign:Card>
-                        <Grid Margin="10"  VerticalAlignment="Center">
+                                        <Grid Background="Transparent" Height="35" VerticalAlignment="Bottom" AllowDrop="True">
+                                            <Border Height="46" VerticalAlignment="Bottom" Margin="1,0" Background="Black" Opacity="0.5"/>
+                                            <Button FontSize="10" FontWeight="Normal" Foreground="White" Content="Change Image" Style="{DynamicResource MaterialDesignToolButton}" Width="Auto" Height="20" Padding="0" Click="Product_image_change"/>
+                                        </Grid>
+                                    </Grid>
+                                </materialDesign:Card>
 
-                            <StackPanel Orientation="Vertical">                            
-                                <StackPanel Orientation="Vertical" HorizontalAlignment="Left">
-                                <Label Content="Net Profit" FontSize="12" FontWeight="SemiBold"/>
-                                 <Label x:Name="net_profit_lbl" Content="Net Profit" FontSize="10" FontWeight="Normal" Margin="0,-10,0,0"/>
-                                </StackPanel>
+                                <Grid Margin="10" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Vertical">
+                                        <StackPanel Orientation="Vertical" HorizontalAlignment="Left">
+                                            <Label Content="Net Profit" FontSize="12" FontWeight="SemiBold"/>
+                                            <Label x:Name="net_profit_lbl" Content="Net Profit" FontSize="10" FontWeight="Normal" Margin="0,-10,0,0"/>
+                                        </StackPanel>
 
-                                <StackPanel Orientation="Vertical" HorizontalAlignment="Left">
-                                    <Label Content="100 Units Profit" FontSize="12" FontWeight="SemiBold"/>
-                                    <Label x:Name="profit_100_lbl" Content="Net Profit" FontSize="10" FontWeight="Normal" Margin="0,-10,0,0"/>
-                                </StackPanel>
+                                        <StackPanel Orientation="Vertical" HorizontalAlignment="Left">
+                                            <Label Content="100 Units Profit" FontSize="12" FontWeight="SemiBold"/>
+                                            <Label x:Name="profit_100_lbl" Content="Net Profit" FontSize="10" FontWeight="Normal" Margin="0,-10,0,0"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
                             </StackPanel>
+                            <!--#endregion-->
 
+                            <!-- Input Fields -->
+                        <Grid Height="400">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+
+                            <StackPanel Orientation="Vertical" >
+                            <TextBox Name="ProductNameTextBox" materialDesign:HintAssist.Hint="Product Name" Width="Auto" Height="35" Margin="0,5" Padding="5,10,5,0"/>
+                            <TextBox Name="ProductDescriptionTextBox" materialDesign:HintAssist.Hint="Product Description" Width="Auto" Height="auto" MinHeight="35" Margin="0,5" Padding="5,10,5,0" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"/>
+                            <TextBox Name="BuyPriceTextBox" materialDesign:HintAssist.Hint="Buy Price" Width="Auto" Height="35" Margin="0,5" Padding="5,10,5,0"/>
+                            <TextBox Name="SellPriceTextBox" materialDesign:HintAssist.Hint="Sell Price" Width="Auto" Height="35" Margin="0,5" Padding="5,10,5,0"/>
+
+                            <!-- Unit of Measurement Dropdown -->
+                                    <ComboBox materialDesign:HintAssist.Hint="Select UOM" Name="UOMComboBox" 
+                                    Style="{DynamicResource MaterialDesignComboBox}" Width="Auto" Height="35" 
+                                        Margin="0,5" Padding="5,10,5,0">
+
+                                        <!-- Weight / Mass -->
+                                        <ComboBoxItem Content="Kilogram" Tag="Enter Kilogram (kg)" />
+                                        <ComboBoxItem Content="Gram" Tag="Enter Gram (g)"/>
+                                        <ComboBoxItem Content="Milligram" Tag="Enter Milligram (mg)"/>
+
+                                        <!-- Volume / Capacity -->
+                                        <ComboBoxItem Content="Liter" Tag="Enter Liter (L)"/>
+                                        <ComboBoxItem Content="Milliliter" Tag="Enter Milliliter (mL)"/>
+
+                                        <!-- Length / Distance -->
+                                        <ComboBoxItem Content="Meter" Tag="Enter Meter (m)"/>
+                                        <ComboBoxItem Content="Centimeter" Tag="Enter Centimeter (cm)"/>
+                                        <ComboBoxItem Content="Millimeter" Tag="Enter Millimeter (mm)"/>
+                                        <ComboBoxItem Content="Inch" Tag="Enter Inch (in)"/>
+                                        <ComboBoxItem Content="Foot" Tag="Enter Foot (ft)"/>
+
+                                        <!-- Count / Pieces -->
+                                        <ComboBoxItem Content="Piece" Tag="Enter Piece (pcs)"/>
+                                        <ComboBoxItem Content="Pack" Tag="Enter Pack"/>
+                                        <ComboBoxItem Content="Box" Tag="Enter Box"/>
+
+                                        <!-- Other -->
+                                        <ComboBoxItem Content="Roll" Tag="Enter Roll"/>
+                                        <ComboBoxItem Content="Set" Tag="Enter Set"/>
+                                        <ComboBoxItem Content="Others" Tag="Enter Others"/>
+                                    </ComboBox>
+
+
+
+                                    <TextBox Name="UnitsTextBox" materialDesign:HintAssist.Hint="{Binding ElementName=UOMComboBox, Path=SelectedItem.Tag}" Width="Auto" Height="35" Margin="0,5" Padding="5,10,5,0"/>
+
+                            <!-- Type Dropdown -->
+                            <ComboBox materialDesign:HintAssist.Hint="Select Type" Name="TypeComboBox" Style="{DynamicResource MaterialDesignComboBox}" Width="Auto" Height="35" Margin="0,5" Padding="5,10,5,0">
+                                <ComboBoxItem Content="Chocolate"/>
+                                <ComboBoxItem Content="Teddy"/>
+                                        <ComboBoxItem Content="Crafts"/>
+                                        <ComboBoxItem Content="Flowers"/>
+                                        <ComboBoxItem Content="Others"/>
+                                    </ComboBox>
+
+                            <TextBox Name="Supplier_textbox" materialDesign:HintAssist.Hint="Supplier Name" Width="Auto" Height="35" Margin="0,5" Padding="5,10,5,0"/>
+                            <TextBox Name="Colour_textbox" materialDesign:HintAssist.Hint="Colour" Width="Auto" Height="35" Margin="0,5" Padding="5,10,5,0"/>
+                            <TextBox Name="Discount_textbox" materialDesign:HintAssist.Hint="Discount" Width="Auto" Height="35" Margin="0,5" Padding="5,10,5,0"/>
+                            <TextBox Name="Barcode_textbox" materialDesign:HintAssist.Hint="Barcode" Width="Auto" Height="35" Margin="0,5" Padding="5,10,5,0"/>
+
+                                    <CheckBox x:Name="Description_checkbox" Content="Automatic Description" Style="{DynamicResource MaterialDesignCheckBox}" Margin="0,10"/>
+                                    <!-- Add Product Button -->
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                                        <Button x:Name="AddProductButton" Content="Add Product" Width="Auto" Style="{DynamicResource MaterialDesignFlatLightBgButton}" Height="35"  Background="#42b490" Foreground="White" BorderBrush="#1b929a" BorderThickness="1" Click="AddProduct_Click"/>
+                                        <Button x:Name="Cancel_Update_button" Content="X" Width="Auto" Visibility="Collapsed" Margin="10,0,0,0" Style="{DynamicResource MaterialDesignFlatLightBgButton}" Height="35"  Background="#4e4e4e" Foreground="White" BorderBrush="#1b929a" BorderThickness="1" Click="Cancel_Update_button_Click"/>
+                                    </StackPanel>
+                                </StackPanel>
+                    </ScrollViewer>
                         </Grid>
-                    
                     </StackPanel>
-
-
-
-
-                    <!--#endregion-->
-
-                    <TextBox Name="ProductNameTextBox"  materialDesign:HintAssist.Hint ="Product Name" Width="Auto" Height="35" Margin="0,5" Padding="5,10,5,0" />
-                    <TextBox Name="ProductDescriptionTextBox"  materialDesign:HintAssist.Hint ="Product Description" Width="Auto" Height="auto" MinHeight="35" Margin="0,5" Padding="5,10,5,0" AcceptsReturn="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" />
-                    <TextBox Name="BuyPriceTextBox" materialDesign:HintAssist.Hint ="Buy Price" Width="Auto" Height="35" Margin="0,5" Padding="5,10,5,0"/>
-                    <TextBox Name="SellPriceTextBox" materialDesign:HintAssist.Hint ="Sell Price" Width="Auto" Height="35" Margin="0,5" Padding="5,10,5,0"/>
-
-                    <!-- Unit of Measurement Dropdown -->
-                    <ComboBox materialDesign:HintAssist.Hint="Select UOM" Name="UOMComboBox" Style="{DynamicResource MaterialDesignComboBox}" Width="Auto" Height="35" Margin="0,5" Padding="5,10,5,0">
-                        <ComboBoxItem Content="Kilogram" />
-                        <ComboBoxItem Content="Gram" />
-                        <ComboBoxItem Content="Pcs" />
-                    </ComboBox>
-
-                    <TextBox Name="StockTextBox" materialDesign:HintAssist.Hint ="Stock" Width="Auto" Height="35" Margin="0,5" Padding="5,10,5,0"/>
-                    <TextBox Name="UnitsTextBox" materialDesign:HintAssist.Hint ="Weight (g)" Width="Auto" Height="35" Margin="0,5" Padding="5,10,5,0"/>
-
-                    <Button Content="Add Product" Width="auto" Style="{DynamicResource MaterialDesignFlatLightBgButton}" Height="35" Margin="0,20,0,0" Background="#42b490" Foreground="White" BorderBrush="#1b929a" BorderThickness="1" Click="AddProduct_Click" />
-                </StackPanel>
+             
                 </materialDesign:Card>
 
+                
                 <!-- Products List Section -->
 
-                <ListView x:Name="InventoryListView" Grid.Column="0" Margin="0,20,0,20" Height="400" Width="672"  SelectionMode="Single" ItemsSource="{Binding Products}">
+                <ListView x:Name="ProductListView" Grid.Column="0" ScrollViewer.HorizontalScrollBarVisibility="Auto" MaxHeight="650" Margin="0,20,0,50" Height="Auto" Width="Auto" Style="{DynamicResource MaterialDesignListView}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" SelectionMode="Single" ItemsSource="{Binding Products, IsAsync=True}">
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn Header="ID" DisplayMemberBinding="{Binding ProductId}" Width="50"/>
-                            <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}" Width="200"/>
-                            <GridViewColumn Header="Buy Price" DisplayMemberBinding="{Binding BuyPrice}" Width="100"/>
-                            <GridViewColumn Header="Sell Price" DisplayMemberBinding="{Binding SellPrice}" Width="100"/>
-                            <GridViewColumn Header="Stock" DisplayMemberBinding="{Binding Stock}" Width="80"/>
-                            <GridViewColumn Header="Weight (g)" DisplayMemberBinding="{Binding Units}" Width="100"/>
+                            <!-- ID Column (1*) -->
+                            <GridViewColumn Header="ID" DisplayMemberBinding="{Binding ProductId}">
+                                <GridViewColumn.Width>
+                                    <MultiBinding Converter="{StaticResource ProportionalWidthConverter}">
+                                        <Binding RelativeSource="{RelativeSource AncestorType=ListView}" Path="ActualWidth"/>
+                                        <Binding Source="1"/>
+                                        <!-- Proportional weight -->
+                                    </MultiBinding>
+                                </GridViewColumn.Width>
+                            </GridViewColumn>
+
+                            <!-- Name Column (2*) -->
+                            <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}">
+                                <GridViewColumn.Width>
+                                    <MultiBinding Converter="{StaticResource ProportionalWidthConverter}">
+                                        <Binding RelativeSource="{RelativeSource AncestorType=ListView}" Path="ActualWidth"/>
+                                        <Binding Source="2"/>
+                                        <!-- Proportional weight -->
+                                    </MultiBinding>
+                                </GridViewColumn.Width>
+                            </GridViewColumn>
+
+                            <!-- Name Column (3*) -->
+                            <GridViewColumn Header="Description" DisplayMemberBinding="{Binding Description}">
+                                <GridViewColumn.Width>
+                                    <MultiBinding Converter="{StaticResource ProportionalWidthConverter}">
+                                        <Binding RelativeSource="{RelativeSource AncestorType=ListView}" Path="ActualWidth"/>
+                                        <Binding Source="2"/>
+                                        <!-- Proportional weight -->
+                                    </MultiBinding>
+                                </GridViewColumn.Width>
+                            </GridViewColumn>
+                            
+                            <!-- Buy Price Column (1*) -->
+                            <GridViewColumn Header="Buy Price" DisplayMemberBinding="{Binding BuyPrice}">
+                                <GridViewColumn.Width>
+                                    <MultiBinding Converter="{StaticResource ProportionalWidthConverter}">
+                                        <Binding RelativeSource="{RelativeSource AncestorType=ListView}" Path="ActualWidth"/>
+                                        <Binding Source="1"/>
+                                        <!-- Proportional weight -->
+                                    </MultiBinding>
+                                </GridViewColumn.Width>
+                            </GridViewColumn>
+
+                            <!-- Sell Price Column (1*) -->
+                            <GridViewColumn Header="Sell Price" DisplayMemberBinding="{Binding SellPrice}">
+                                <GridViewColumn.Width>
+                                    <MultiBinding Converter="{StaticResource ProportionalWidthConverter}">
+                                        <Binding RelativeSource="{RelativeSource AncestorType=ListView}" Path="ActualWidth"/>
+                                        <Binding Source="1"/>
+                                        <!-- Proportional weight -->
+                                    </MultiBinding>
+                                </GridViewColumn.Width>
+                            </GridViewColumn>
+
+                            <!-- Weight Column (1*) -->
+                            <GridViewColumn Header="UOM" DisplayMemberBinding="{Binding UOM}">
+                                <GridViewColumn.Width>
+                                    <MultiBinding Converter="{StaticResource ProportionalWidthConverter}">
+                                        <Binding RelativeSource="{RelativeSource AncestorType=ListView}" Path="ActualWidth"/>
+                                        <Binding Source="1"/>
+                                        <!-- Proportional weight -->
+                                    </MultiBinding>
+                                </GridViewColumn.Width>
+                            </GridViewColumn>
+
+                            <!-- Weight Column (1*) -->
+                            <GridViewColumn Header="Units" DisplayMemberBinding="{Binding Units}">
+                                <GridViewColumn.Width>
+                                    <MultiBinding Converter="{StaticResource ProportionalWidthConverter}">
+                                        <Binding RelativeSource="{RelativeSource AncestorType=ListView}" Path="ActualWidth"/>
+                                        <Binding Source="1"/>
+                                        <!-- Proportional weight -->
+                                    </MultiBinding>
+                                </GridViewColumn.Width>
+                            </GridViewColumn>
+                            
+                            <!-- Weight Column (1*) -->
+                            <GridViewColumn Header="Supplier" DisplayMemberBinding="{Binding SupplierName}">
+                                <GridViewColumn.Width>
+                                    <MultiBinding Converter="{StaticResource ProportionalWidthConverter}">
+                                        <Binding RelativeSource="{RelativeSource AncestorType=ListView}" Path="ActualWidth"/>
+                                        <Binding Source="1"/>
+                                        <!-- Proportional weight -->
+                                    </MultiBinding>
+                                </GridViewColumn.Width>
+                            </GridViewColumn>
+
+                            <!-- Weight Column (1*) -->
+                            <GridViewColumn Header="Type" DisplayMemberBinding="{Binding Type}">
+                                <GridViewColumn.Width>
+                                    <MultiBinding Converter="{StaticResource ProportionalWidthConverter}">
+                                        <Binding RelativeSource="{RelativeSource AncestorType=ListView}" Path="ActualWidth"/>
+                                        <Binding Source="1"/>
+                                        <!-- Proportional weight -->
+                                    </MultiBinding>
+                                </GridViewColumn.Width>
+                            </GridViewColumn>
+
+                            <!-- Weight Column (1*) -->
+                            <GridViewColumn Header="Discount" DisplayMemberBinding="{Binding Discount}">
+                                <GridViewColumn.Width>
+                                    <MultiBinding Converter="{StaticResource ProportionalWidthConverter}">
+                                        <Binding RelativeSource="{RelativeSource AncestorType=ListView}" Path="ActualWidth"/>
+                                        <Binding Source="1"/>
+                                        <!-- Proportional weight -->
+                                    </MultiBinding>
+                                </GridViewColumn.Width>
+                            </GridViewColumn>
+
+                            <!-- Weight Column (1*) -->
+                            <GridViewColumn Header="Colour" DisplayMemberBinding="{Binding Colour}">
+                                <GridViewColumn.Width>
+                                    <MultiBinding Converter="{StaticResource ProportionalWidthConverter}">
+                                        <Binding RelativeSource="{RelativeSource AncestorType=ListView}" Path="ActualWidth"/>
+                                        <Binding Source="1"/>
+                                        <!-- Proportional weight -->
+                                    </MultiBinding>
+                                </GridViewColumn.Width>
+                            </GridViewColumn>
+
+                            <GridViewColumn Header="Action">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
+                                            <!-- Edit Button -->
+                                            <Button Content="✏️" Click="EditProduct_Click" Style="{DynamicResource MaterialDesignFlatLightBgButton}" Width="35" Padding="2" Margin="10,0"
+                                            Background="LightBlue" Foreground="Black"/>
+
+                                            <!-- Delete Button -->
+                                            <Button Content="🗑️" Click="DeleteProduct_Click" Style="{DynamicResource MaterialDesignFlatLightBgButton}" Width="35" Padding="2"
+                                            Background="LightCoral" Foreground="White"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
+
+
                         </GridView>
                     </ListView.View>
                 </ListView>

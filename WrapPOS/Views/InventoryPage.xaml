@@ -12,71 +12,173 @@
     <Grid Margin="20">
         <StackPanel Orientation="Vertical" Margin="20">
 
-            <!-- Title -->
-            <TextBlock Text="Inventory Management" FontSize="28" FontWeight="Bold" Foreground="#2C3E50" HorizontalAlignment="Center" />
+            <Grid HorizontalAlignment="Stretch">
+                <StackPanel Orientation="Vertical" Background="Transparent">
+                    <TextBlock Text="Inventory Management" FontSize="20" FontWeight="SemiBold" Foreground="#2C3E50" HorizontalAlignment="left" />
+                    <TextBlock Text="Manage your inventory here and explore the complete inventory Stock" FontSize="13" FontWeight="Normal" Foreground="Gray" HorizontalAlignment="left" />
+                </StackPanel>
 
-            <!-- Buttons Section -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
-                <Button Content="Update Selected" Width="150" Height="40" Margin="5" Background="#E67E22" Foreground="White" BorderBrush="#D35400" BorderThickness="1" Click="UpdateItem_Click"/>
-                <Button Content="Delete Selected" Width="150" Height="40" Margin="5" Background="#E74C3C" Foreground="White" BorderBrush="#C0392B" BorderThickness="1" Click="DeleteItem_Click"/>
-            </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBox x:Name="SearchBox"  Width="350" Margin="10" Height="30" materialDesign:HintAssist.Hint="Search..." TextChanged="SearchBox_TextChanged"/>
+
+                    <Button x:Name="ExportButton" 
+                    Content="{materialDesign:PackIcon Kind=FileExcel}"
+                        Style="{DynamicResource MaterialDesignIconButton}"
+                        Width="50" Height="50" 
+                        HorizontalAlignment="Center" 
+                        VerticalAlignment="Top"
+                        FontSize="25"
+                        Padding="0"
+                        Foreground="LimeGreen"
+                        ToolTip="Export to Excel"
+                        Margin="10"
+                        Click="ExportButton_Click">
+
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+
 
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="250"/>
-      
+
                 </Grid.ColumnDefinitions>
 
-            <!-- Add Product Fields -->
-                <StackPanel Orientation="Vertical" Margin="20,-50,0,0" Grid.Column="1" >
+                <StackPanel Margin="20" Grid.Row="1" Grid.Column="1">
 
-                        <!--#region Upload Box -->
-                        <Grid Margin="5" VerticalAlignment="Top" Height="140">
-                            <Rectangle Name="Drop_rectangle" RadiusX="4" RadiusY="4" Margin="0,7,0,4" AllowDrop="True" Fill="WhiteSmoke" StrokeDashArray="4" StrokeThickness="2" StrokeDashCap="Round" Stroke="Silver" Drop="Drop_rectangle_Drop" >
-                            </Rectangle>
-                            <materialDesign:PackIcon Kind="ImageAdd" VerticalAlignment="Center" HorizontalAlignment="Center" Height="20" Width="20" Foreground="Silver" Margin="72,22,68,58"/>
-                            <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,-35" >
-                                <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <TextBlock  Text="Drag drop your Image here or" TextAlignment="Center" FontWeight="Normal" Width="150" TextWrapping="Wrap" FontSize="10" Foreground="#4B4B4E"/>
-                                    <TextBlock Margin="3,1,3,0" FontSize="9" TextAlignment="Center" Foreground="#4B4B4E" Height="14" VerticalAlignment="Top">
-                                            <Hyperlink Click="Hyperlink_Click" FontSize="9">Choose file</Hyperlink>
-                                    </TextBlock>
-                                </StackPanel>
-                            </Grid>
-                        </Grid>
-                        <!--#endregion-->
                     
-                        <TextBox Name="ProductNameTextBox"  materialDesign:HintAssist.Hint ="Product Name" Width="300" Height="30" Margin="0,5" />
-                    <TextBox Name="BuyPriceTextBox" materialDesign:HintAssist.Hint ="Buy Price" Width="300" Height="30" Margin="0,5" />
-                    <TextBox Name="SellPriceTextBox" materialDesign:HintAssist.Hint ="Sell Price" Width="300" Height="30" Margin="0,5" />
-                    <TextBox Name="StockTextBox" materialDesign:HintAssist.Hint ="Stock" Width="300" Height="30" Margin="0,5" />
-                    <TextBox Name="UnitsTextBox" materialDesign:HintAssist.Hint ="Weight (g)" Width="300" Height="30" Margin="0,5" />
 
-                    <!-- Unit of Measurement Dropdown -->
-                    <ComboBox Name="UOMComboBox" Width="300" Height="40" Margin="0,5">
-                        <ComboBoxItem Content="Kg" />
-                        <ComboBoxItem Content="Gram" />
-                        <ComboBoxItem Content="Piece" />
-                    </ComboBox>
+                    <TextBox x:Name="ProductTextBox"
+                              materialDesign:HintAssist.Hint="Search Product !" materialDesign:HintAssist.FloatingOffset="0,-15" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" 
+         KeyUp="ProductComboBox_KeyUp"
+                             materialDesign:TextFieldAssist.HasClearButton="True"
+         Width="300" FontSize="12" 
+         Margin="10" Foreground="Black"
+         VerticalAlignment="Top" LostFocus="ProductTextBox_LostFocus" />
 
-                    <Button Content="Add Product" Width="auto" Style="{DynamicResource MaterialDesignFlatLightBgButton}" Height="40" Background="#42b490" Foreground="White" BorderBrush="#1b929a" BorderThickness="1" Click="AddProduct_Click" />
+                    <!-- ListBox for displaying suggestions -->
+                    <ListBox x:Name="SuggestionsListBox"
+         Visibility="Collapsed"
+         SelectionChanged="ProductComboBox_SelectionChanged"
+                             Style="{DynamicResource MaterialDesignListBox}"
+         Width="300" Margin="10"
+         Background="White" Foreground="Black"
+         BorderBrush="Gray" BorderThickness="1"
+         Height="200" />
+
+
+                    <!-- OR Scan Product via Barcode -->
+                    <TextBox x:Name="BarcodeTextBox" Margin="10"  materialDesign:HintAssist.Hint="Scan Barcode" materialDesign:HintAssist.FloatingOffset="0,-15" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" materialDesign:TextFieldAssist.HasClearButton="True"/>
+                    <Button Content="Scan" Click="ScanProduct" Margin="10"/>
+
+                    <!-- Quantity Input -->
+                    <TextBox x:Name="QuantityTextBox"  materialDesign:HintAssist.Hint="Enter Quantity" materialDesign:HintAssist.FloatingOffset="0,-15" Style="{DynamicResource MaterialDesignFloatingHintTextBox}" Margin="10" materialDesign:TextFieldAssist.HasClearButton="True" />
+
+                    <!-- Purchase Date -->
+                    <DatePicker x:Name="PurchaseDatePicker" Margin="10" materialDesign:HintAssist.IsFloating="True" materialDesign:HintAssist.Hint="Purchase Date" materialDesign:HintAssist.FloatingOffset="0,-15" materialDesign:TextFieldAssist.HasClearButton="True"/>
+
+                    <!-- Expiry Date (Optional) -->
+                    <DatePicker x:Name="ExpiryDatePicker" Margin="10"  materialDesign:HintAssist.Hint="Expire Date" materialDesign:HintAssist.FloatingOffset="0,-15" materialDesign:TextFieldAssist.HasClearButton="True" />
+
+                    <!-- Submit Button -->
+                    <Button Content="Add Inventory" Click="AddInventory_Click" Margin="10"/>
+
+                    <!-- Material Card for Product Details -->
+                    <materialDesign:Card Margin="10" Padding="10" Height="270" BorderBrush="Gray" BorderThickness="1">
+                        <StackPanel>
+                            <!-- Product Image -->
+                            <materialDesign:Card Background="Transparent"  UniformCornerRadius="10" Width="120" Height="120" HorizontalAlignment="Center" VerticalAlignment="Top"  materialDesign:ElevationAssist.Elevation="Dp4" >
+                                <Grid>
+                                    <Rectangle>
+                                        <Rectangle.Fill>
+                                            <ImageBrush x:Name="ProductImage" Stretch="UniformToFill"/>
+                                        </Rectangle.Fill>
+                                    </Rectangle>
+                                </Grid>
+                            </materialDesign:Card>
+
+
+                            <TextBlock x:Name="ProductNameTextBlock" FontSize="20" FontWeight="Bold" TextAlignment="Center" Margin="0,5,0,0"/>
+
+                            <TextBlock x:Name="ProductDescriptionTextBlock" Foreground="Gray" TextAlignment="Center" Margin="0,5,0,0" TextWrapping="Wrap"/>
+
+                            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" Margin="0, 15,0,0">
+                                <TextBlock x:Name="ProductBarcodeTextBlock" TextAlignment="Center" Margin="10, 0" FontWeight="Medium"/>
+                                <TextBlock x:Name="ProductPriceTextBlock" TextAlignment="Center" Margin="10, 0" FontWeight="Medium"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </materialDesign:Card>
                 </StackPanel>
 
-            <!-- Products List Section -->
-                
-            <ListView Name="InventoryListView" Grid.Column="0" Margin="0,20,0,20" Height="400" Width="672"  SelectionMode="Single" ItemsSource="{Binding Products}">
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Header="ID" DisplayMemberBinding="{Binding ProductId}" Width="50"/>
-                        <GridViewColumn Header="Name" DisplayMemberBinding="{Binding Name}" Width="200"/>
-                        <GridViewColumn Header="Buy Price" DisplayMemberBinding="{Binding BuyPrice}" Width="100"/>
-                        <GridViewColumn Header="Sell Price" DisplayMemberBinding="{Binding SellPrice}" Width="100"/>
-                        <GridViewColumn Header="Stock" DisplayMemberBinding="{Binding Stock}" Width="80"/>
-                        <GridViewColumn Header="Weight (g)" DisplayMemberBinding="{Binding Units}" Width="100"/>
-                    </GridView>
-                </ListView.View>
-            </ListView>
+
+                <!-- Products List Section -->
+
+                <ListView Name="InventoryListView" Grid.Column="0" Margin="0,20,0,20"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Auto"  SelectionMode="Single" ItemsSource="{Binding Inventory, IsAsync=True}">
+                    <ListView.View>
+                        <GridView>
+                            <!-- Column for Product Name and Description -->
+                            <GridViewColumn Header="Product" Width="260">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Vertical">
+                                            <TextBlock Text="{Binding Product.Name}" FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding Product.Description}" Foreground="Gray" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
+                            <!-- Column for Stock -->
+                            <GridViewColumn Header="Stock" DisplayMemberBinding="{Binding Quantity}" Width="100" />
+
+                            <!-- Column for Units -->
+                            <GridViewColumn Header="Units" Width="100">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Product.Units}" FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding Product.UOM}"  Margin="5,0,0,0" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
+                            <!-- Column for Sell Price -->
+                            <GridViewColumn Header="Sell Price" DisplayMemberBinding="{Binding Product.SellPrice}" Width="100" />
+
+                            <!-- Column for Type -->
+                            <GridViewColumn Header="Type" DisplayMemberBinding="{Binding Product.Type}" Width="100" />
+
+                            <!-- Column for Colour -->
+                            <GridViewColumn Header="Colour" DisplayMemberBinding="{Binding Product.Colour}" Width="100" />
+
+                            <!-- Column for Supplier -->
+                            <GridViewColumn Header="Supplier" DisplayMemberBinding="{Binding Product.SupplierName}" Width="150" />
+
+                            <!-- Column for Barcode -->
+                            <GridViewColumn Header="Barcode" DisplayMemberBinding="{Binding Product.Barcode}" Width="100" />
+
+
+                            <!-- Actions Column with Edit and Delete Buttons -->
+                            <GridViewColumn Header="Actions" Width="150">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                            <!-- Edit Button -->
+                                            <Button Content="Edit" Width="60" Margin="5" Click="EditButton_Click" Tag="{Binding InventoryId}" />
+                                            <!-- Delete Button -->
+                                            <Button Content="Delete" Width="60" Margin="5" Click="DeleteButton_Click" Tag="{Binding InventoryId}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+
             </Grid>
         </StackPanel>
     </Grid>
