@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.33801.447
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113 d17.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WrapPOS", "WrapPOS\WrapPOS.csproj", "{A42BD2AA-2082-4DEB-9ECC-B926F748C497}"
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "WrapPOS_setup", "WrapPOS_setup\WrapPOS_setup.vdproj", "{53AEBB1B-503A-43BB-89B5-AFCBC0E8BA87}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,8 @@ Global
 		{A42BD2AA-2082-4DEB-9ECC-B926F748C497}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A42BD2AA-2082-4DEB-9ECC-B926F748C497}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A42BD2AA-2082-4DEB-9ECC-B926F748C497}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53AEBB1B-503A-43BB-89B5-AFCBC0E8BA87}.Debug|Any CPU.ActiveCfg = Debug
+		{53AEBB1B-503A-43BB-89B5-AFCBC0E8BA87}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

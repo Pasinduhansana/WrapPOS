@@ -271,5 +271,93 @@ namespace WrapPOS.Data
                 throw new Exception("Error deleting inventory: " + ex.Message);
             }
         }
+
+        public ObservableCollection<Sales> GetSales()
+        {
+            var salesList = new ObservableCollection<Sales>();
+
+            using (var connection = new SQLiteConnection($"Data Source={dbPath}"))
+            {
+                connection.Open();
+
+                var query = @"SELECT s.SalesId, s.SalesDate, s.TotalAmount, s.Discount, s.NetAmount, s.CustomerName, s.PaymentMethod, s.Profit
+                            FROM Sales s";
+
+                using (var command = new SQLiteCommand(query, connection))
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var sale = new Sales
+                        {
+                            SalesId = reader.GetInt32(0),
+                            SalesDate = reader.GetDateTime(1),
+                            TotalAmount = reader.GetDecimal(2),
+                            Discount = reader.GetDecimal(3),
+                            NetAmount = reader.GetDecimal(4),
+                            CustomerName = reader.IsDBNull(5) ? null : reader.GetString(5),
+                            PaymentMethod = reader.GetString(6),
+                            Profit = reader.GetDecimal(7)
+                        };
+
+                        // Retrieve associated SalesItems for this Sale
+                        sale.SalesItems = GetSalesItemsBySalesId(sale.SalesId);
+
+                        salesList.Add(sale);
+                    }
+                }
+            }
+
+            return salesList;
+        }
+
+        // Method to retrieve SalesItems for a specific SalesId
+        public ObservableCollection<SalesItem> GetSalesItemsBySalesId(int salesId)
+        {
+            var salesItemsList = new ObservableCollection<SalesItem>();
+
+            using (var connection = new SQLiteConnection($"Data Source={dbPath}"))
+            {
+                connection.Open();
+
+                var query = @"SELECT si.SalesItemId, si.SalesId, si.ProductId, si.ProductName, si.Description, si.UnitPrice, 
+                              si.Quantity, si.TotalPrice, si.BuyPrice, si.UOM, si.Discount, si.Colour, si.Barcode, si.ImagePath
+                            FROM SalesItems si
+                            WHERE si.SalesId = @SalesId";
+
+                using (var command = new SQLiteCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@SalesId", salesId);
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var salesItem = new SalesItem
+                            {
+                                SalesItemId = reader.GetInt32(0),
+                                SalesId = reader.GetInt32(1),
+                                ProductId = reader.GetInt32(2),
+                                ProductName = reader.GetString(3),
+                                Description = reader.GetString(4),
+                                UnitPrice = reader.GetDecimal(5),
+                                Quantity = reader.GetInt32(6),
+                                TotalPrice = reader.GetDecimal(7),
+                                BuyPrice = reader.GetDecimal(8),
+                                UOM = reader.GetString(9),
+                                Discount = reader.GetDecimal(10),
+                                Colour = reader.GetString(11),
+                                Barcode = reader.GetString(12),
+                                ImagePath = reader.GetString(13)
+                            };
+
+                            salesItemsList.Add(salesItem);
+                        }
+                    }
+                }
+            }
+
+            return salesItemsList;
+        }
     }
 }
