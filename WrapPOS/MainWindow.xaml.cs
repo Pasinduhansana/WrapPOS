@@ -33,5 +33,15 @@ namespace WrapPOS
         {
             MainFrame.Navigate(new Views.InventoryPage());
         }
+
+        private void Sales_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Navigate(new Views.SalesPage());
+        }
+
+        private void Dashboard_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Navigate(new Views.Dashboard());
+        }
     }
 }
