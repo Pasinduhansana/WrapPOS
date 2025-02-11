@@ -9,12 +9,15 @@
         Title="Wrap POS System" Height="680" Width="1200" WindowStartupLocation="CenterScreen">
     
     <Grid>
+        <materialDesign:Snackbar x:Name="CartSnackbar" MessageQueue="{Binding SnackbarMessageQueue}" />
+
         <DockPanel>
             <!-- Sidebar Navigation -->
             <StackPanel DockPanel.Dock="Left" Width="200" Background="#2C3E50">
                 <Button Content="Products" Click="Products_Click" Foreground="White" Background="Transparent" />
                 <Button Content="Inventory" Click="Inventory_Click" Foreground="White" Background="Transparent" />
                 <Button Content="Sales" Click="Sales_Click" Foreground="White" Background="Transparent" />
+                <Button Content="Home" Click="Home_Click" Foreground="White" Background="Transparent" />
                 <Button Content="Dashboard" Click="Dashboard_Click" Foreground="White" Background="Transparent" />
             </StackPanel>
 

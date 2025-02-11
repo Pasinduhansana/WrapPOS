@@ -43,5 +43,11 @@ namespace WrapPOS
         {
             MainFrame.Navigate(new Views.Dashboard());
         }
+
+        private void Home_Click(object sender, RoutedEventArgs e)
+        {
+            MainFrame.Navigate(new Views.Home());
+
+        }
     }
 }

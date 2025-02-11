@@ -1,8 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.IO;
 
 namespace WrapPOS.Models
 {
-    public class Product
+    public class Product : INotifyPropertyChanged
     {
         [Key]
         public int ProductId { get; set; }
@@ -41,6 +44,52 @@ namespace WrapPOS.Models
         public string Colour { get; set; }
 
         public string Barcode { get; set; }
+
+        public string FullImagePath
+        {
+            get
+            {
+                // Get absolute path to the bin folder
+                string basePath = AppDomain.CurrentDomain.BaseDirectory;
+
+                // Combine base path with the stored relative path
+                if(ImagePath is null)
+                {
+                    return ImagePath;
+                }
+                else
+                {
+                    if (basePath.Contains("\\"))
+                    {
+                        basePath=basePath.Replace('\\', '/');
+                    }
+                    return Path.Combine(basePath, ImagePath);
+                }
+
+            }
+        }
+
+        private int _quantity = 1;
+
+        public int Quantity
+        {
+            get => _quantity;
+            set
+            {
+                if (_quantity != value)
+                {
+                    _quantity = value;
+                    OnPropertyChanged(nameof(Quantity)); // Notify UI
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }
     
