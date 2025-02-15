@@ -4,17 +4,26 @@
 	  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
 	  xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
 	  xmlns:local="clr-namespace:WrapPOS.Views"
+      xmlns:converters="clr-namespace:WrapPOS.Converters"
 	  xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 	  mc:Ignorable="d" 
 	  d:DesignHeight="600" d:DesignWidth="900" Background="White" FontFamily="Poppins"
 	  Title="Home">
-
-	<Grid>
+    
+    <Page.Resources>
+        <converters:StockToOutOfStockConverter x:Key="StockToOutOfStockConverter"/>
+        <LinearGradientBrush x:Key="SnackbarGradientBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#2d2d2d" Offset="0" />
+            <GradientStop Color="#525252" Offset="1" />
+        </LinearGradientBrush>
+    </Page.Resources>
+    
+    <Grid>
+        
 		<Grid.RowDefinitions>
 			<RowDefinition Height="70"/>
 			<RowDefinition Height="*"/>
 		</Grid.RowDefinitions>
-
 		<!--#region First Seperator -->
 		<Separator Grid.ColumnSpan="2" VerticalAlignment="Top" Style="{DynamicResource MaterialDesignSeparator}" Opacity="0.5" Height="2" Margin="0,0,0,0"></Separator>
 		<!--#endregion-->
@@ -81,23 +90,24 @@
 								<materialDesign:Card Width="200" UniformCornerRadius="10" materialDesign:ShadowAssist.ShadowDepth="Depth2" 
 											BorderBrush="Gainsboro" BorderThickness="1" Background="White" MaxHeight="420" 
 											Margin="5">
-									<Grid Margin="4">
+									<Grid Margin="4" VerticalAlignment="Stretch">
 										<Grid.RowDefinitions>
-											<RowDefinition Height="150"/>
+											<RowDefinition Height="160"/>
 											<RowDefinition Height="*"/>
-											<RowDefinition Height="*"/>
-											<RowDefinition Height="*"/>
+											<RowDefinition Height="72"/>
 										</Grid.RowDefinitions>
 
 										<!-- Product Image -->
-										<materialDesign:Card Grid.Row="0" UniformCornerRadius="15">
-											<materialDesign:Card.Background>
-												<ImageBrush ImageSource="{Binding FullImagePath}" Stretch="Fill"/>
-											</materialDesign:Card.Background>
-										</materialDesign:Card>
-
-										<!-- Product Title & Description -->
-										<StackPanel Orientation="Vertical" VerticalAlignment="Center" Height="Auto" Grid.Row="1" Margin="0,5,0,0">
+                                        <Border Background="WhiteSmoke" CornerRadius="8" materialDesign:ShadowAssist.ShadowDepth="Depth5" materialDesign:ShadowAssist.ShadowEdges="All" Margin="5">
+										<materialDesign:Card Grid.Row="0" Width="150" >
+                                            <materialDesign:Card.Background>
+                                                <ImageBrush ImageSource="{Binding FullImagePath}" Stretch="Fill"/>
+                                            </materialDesign:Card.Background>
+                                        </materialDesign:Card>
+                                        </Border>
+                                        
+                                        <!-- Product Title & Description -->
+										<StackPanel Orientation="Vertical" VerticalAlignment="Top" Height="Auto" Grid.Row="1" Margin="0,5,0,10">
 											<TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" 
 											   HorizontalAlignment="Center" Foreground="#2d2d2d" Margin="0,0,0,2"/>
 											<TextBlock Text="{Binding Description}" HorizontalAlignment="Center" TextWrapping="Wrap" 
@@ -105,28 +115,66 @@
 										</StackPanel>
 
 										<!-- Product Price and Stock -->
-										<Grid Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5">
+                                        <StackPanel Grid.Row="2">
+										<Grid  HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5">
 											<TextBlock Text="{Binding SellPrice, StringFormat='Rs. {0}'}" FontSize="15" VerticalAlignment="Center" 
-											   HorizontalAlignment="Left" FontWeight="Medium" Foreground="LimeGreen" Margin="0,0,0,2"/>
-											<materialDesign:Card UniformCornerRadius="10" VerticalAlignment="Center" 
-														 materialDesign:ShadowAssist.ShadowDepth="Depth0" BorderBrush="LightGray" 
-														 BorderThickness="1" Background="Gainsboro" HorizontalAlignment="Right" Height="20">
-												<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,2">
-													<TextBlock Text="{Binding Stock}" FontSize="11" Margin="3,0" FontWeight="Normal" 
-													   Opacity="0.7" Foreground="#2d2d2d"/>
-													<TextBlock Text="Items" FontSize="11" FontWeight="Normal" Opacity="0.7" Foreground="#2d2d2d"/>
-												</StackPanel>
-											</materialDesign:Card>
+											   HorizontalAlignment="Left" FontWeight="Medium" Foreground="#2d2d2d" Margin="0,0,0,2"/>
+											<Border x:Name="Stock_card" CornerRadius="10" VerticalAlignment="Center" 
+														 materialDesign:ShadowAssist.ShadowDepth="Depth0"   HorizontalAlignment="Right" Height="20">
+                                                   
+                                                <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="Background" Value="#b0ffcd"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Stock}" Value="0">
+                                                                    <Setter Property="Background" Value="#ffc9c9"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                
+                                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10,2">
+
+                                                        
+                                                        <!-- Use the converter to dynamically show "Out of Stock" -->
+                                                        <TextBlock Text="{Binding Stock, Converter={StaticResource StockToOutOfStockConverter}}" FontWeight="Medium" FontSize="12" Margin="0,-1,0,0"  >
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Foreground" Value="#06bf47"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Stock}" Value="0">
+                                                                            <Setter Property="Foreground" Value="Crimson"/>
+                                                                            <Setter Property="FontSize" Value="10"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                        <TextBlock x:Name="UOM_txtbox" Text="Items" FontSize="12" FontWeight="Normal" Opacity="1" Margin="4,-1,0,0" >
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Foreground" Value="#06bf47"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Stock}" Value="0">
+                                                                            <Setter  Property="Visibility" Value="Collapsed"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                            </TextBlock>
+                                                    </StackPanel>
+                                                </Border>
 										</Grid>
 
 										<!-- Add to Cart Button -->
-										<Button Grid.Row="3" Margin="0,5,0,0" Width="Auto" Content="+ Add to cart" 
+										<Button Margin="0,5,0,0" Width="Auto" Content="+ Add to cart" 
 										VerticalAlignment="Center" HorizontalAlignment="Stretch" 
 										Style="{DynamicResource MaterialDesignFlatLightButton}" 
 										materialDesign:ButtonAssist.CornerRadius="8" BorderBrush="Gainsboro" 
 										BorderThickness="1" FontWeight="Medium" FontSize="14" Foreground="#2d2d2d"
 										Click="AddToCart_Click" Tag="{Binding}"/>
-									</Grid>
+                                        </StackPanel>
+                                    </Grid>
 								</materialDesign:Card>
 							</DataTemplate>
 						</ItemsControl.ItemTemplate>
@@ -136,53 +184,89 @@
 
 			</Grid>
 
-			<Grid Grid.Column="1" Width="300" Background="#F5F5F5" >
-				<StackPanel Margin="5">
-					<TextBlock Text="Shopping Cart"  FontSize="16" FontWeight="SemiBold" Margin="15,0,0,10" Foreground="#2d2d2d"/>
+            <Grid Grid.Column="1" Width="300" Background="#F5F5F5" >
+                <StackPanel Margin="5">
+                    <TextBlock Text="Shopping Cart"  FontSize="16" FontWeight="SemiBold" Margin="15,0,0,10" Foreground="#2d2d2d"/>
 
-                    <ListView x:Name="CartListBox" Height="400" Style="{DynamicResource MaterialDesignNavigationListBox}" Background="Transparent"  Padding="0">
+                    <ListView x:Name="CartListBox" Height="400"  Background="Transparent"  Padding="0">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="Margin" Value="2"/>
+                                <Setter Property="Padding" Value="5"/>
+                                <Setter Property="Background" Value="White"/>
+                                <Setter Property="BorderThickness" Value="1"/>
+                                <Setter Property="BorderBrush" Value="#E0E0E0"/>
+                                <Setter Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="Black" BlurRadius="5" ShadowDepth="2" Opacity="0.1"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="ListViewItem">
+                                            <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter />
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                                <!-- Hover Effect -->
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Background" Value="#f5f5f5"/>
+                                        <Setter Property="BorderBrush" Value="DodgerBlue"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ListView.ItemContainerStyle>
                         <ListView.ItemTemplate>
                             <DataTemplate>
-                                <Border BorderThickness="1" HorizontalAlignment="Stretch" BorderBrush="#E0E0E0" CornerRadius="8" Padding="8" Margin="4,0">
+                                <Border BorderThickness="1" HorizontalAlignment="Stretch" BorderBrush="#E0E0E0" CornerRadius="8" Padding="8" Margin="0">
 
-                                    <Grid HorizontalAlignment="Stretch" Width="Auto" Height="50">
+                                    <Grid HorizontalAlignment="Stretch" Width="Auto" Height="55">
                                         <!-- Grid Layout -->
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="60"/>
                                             <!-- Image -->
                                             <ColumnDefinition Width="*"/>
                                             <!-- Name & Price (Fill Remaining Space) -->
-                                            <ColumnDefinition Width="Auto"/>
-                                            <!-- Quantity Adjuster -->
                                             <ColumnDefinition Width="40"/>
+                                            <!-- Quantity Adjuster -->
+                                            <ColumnDefinition Width="20"/>
                                             <!-- Remove Button -->
                                         </Grid.ColumnDefinitions>
 
                                         <!-- Product Image -->
-                                        <Image Source="{Binding FullImagePath}"  Width="50" Height="50" Margin="5" Grid.Column="0"/>
+                                        <Image Source="{Binding FullImagePath}"  Width="50" Height="50" Margin="5,0" Grid.Column="0"/>
 
                                         <!-- Name & Price -->
-                                        <StackPanel VerticalAlignment="Center" Grid.Column="1" Margin="10,0">
-                                            <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold"/>
-                                            <TextBlock Text="{Binding SellPrice, StringFormat='Rs. {0}'}" Foreground="Gray"/>
-                                        </StackPanel>
+                                        <Grid VerticalAlignment="Center" Grid.Column="1" HorizontalAlignment="Stretch">
+                                            <StackPanel  Margin="10,0" ToolTip="{Binding Name}">
+                                                <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold" />
+                                                <TextBlock Text="{Binding SellPrice, StringFormat='Rs. {0}'}" Foreground="Gray"/>
+                                            </StackPanel>
+                                        </Grid>
 
                                         <!-- Quantity Adjuster -->
-                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Grid.Column="2" Margin="10,0">
-                                            <Button Content="-" Width="25" Height="25" Padding="0"
+                                        <StackPanel Orientation="Vertical" VerticalAlignment="Center" Grid.Column="2" Margin="0,0">
+                                            <Button Content="-" Width="25" Height="16" Padding="-2"
 											Click="DecreaseQuantity_Click"
 											Tag="{Binding}" Style="{DynamicResource MaterialDesignOutlinedButton}"/>
 
                                             <TextBlock Text="{Binding Quantity}" Width="30" TextAlignment="Center"
 											VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold"/>
 
-                                            <Button Content="+" Width="25" Height="25" Padding="0"
+                                            <Button Content="+" Width="25" Height="16" Padding="-2"
 											Click="IncreaseQuantity_Click"
 											Tag="{Binding}" Style="{DynamicResource MaterialDesignOutlinedButton}"/>
-					                        </StackPanel>
+                                        </StackPanel>
 
                                         <!-- Remove Button -->
-                                        <Button Content="X" Width="25" Height="25" Padding="0" Grid.Column="3"
+                                        <Button Content="X" Width="20" Height="20" Padding="0" Grid.Column="3" Margin="0,0,0,0"
 											Foreground="Crimson" BorderBrush="Crimson" BorderThickness="1"
 											materialDesign:ShadowAssist.ShadowDepth="Depth2"
 											Click="RemoveFromCart_Click"
@@ -195,8 +279,12 @@
 
                     <StackPanel Orientation="Vertical" Margin="5">
                         <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
-                            <TextBlock Text="Total: " FontSize="14" FontWeight="SemiBold"/>
-                            <TextBlock x:Name="TotalAmountText" FontSize="14" FontWeight="SemiBold"/>
+                            <TextBlock Text="Total Quantity : " FontSize="12" FontWeight="SemiBold" />
+                            <TextBlock x:Name="TotalQuantityText" Text="0" FontSize="12" FontWeight="SemiBold"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="10,10,0,0">
+                            <TextBlock Text="Total : " FontSize="14" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="TotalAmountText" FontSize="14" Text="0.00" FontWeight="SemiBold"/>
                         </StackPanel>
 
                         <!-- Purchase Button -->
@@ -206,8 +294,27 @@
 							 Margin="0,10,0,0"/>
                     </StackPanel>
                 </StackPanel>
-			</Grid>
+            </Grid>
+        </Grid>
 
-		</Grid>
-	</Grid>
+        <materialDesign:Snackbar x:Name="CartSnackbar" 
+                         Background="{StaticResource SnackbarGradientBrush}" 
+                         BorderBrush="Transparent" 
+                         BorderThickness="0" 
+                         Foreground="White" 
+                         MessageQueue="{Binding SnackbarMessageQueue}"  
+                         Grid.RowSpan="6" 
+                         Grid.ColumnSpan="10">
+
+
+            <!-- Add shadow effect -->
+            <materialDesign:Snackbar.Effect>
+                <DropShadowEffect Color="Black" BlurRadius="10" Direction="270" ShadowDepth="5" Opacity="0.2"/>
+            </materialDesign:Snackbar.Effect>
+
+
+        </materialDesign:Snackbar>
+
+    </Grid>
+    
 </Page>

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -35,6 +37,7 @@ namespace WrapPOS.Views
             _databaseService = new DatabaseService();
             SalesList = new ObservableCollection<Sales>();
             CollectionView = new CollectionViewSource { Source = SalesList };
+            DataContext = this;
             LoadSalesData();
         }
 
@@ -56,12 +59,34 @@ namespace WrapPOS.Views
 
                 // Bind the data to update the ListView
                 SalesListView.ItemsSource = SalesList;
+                
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error loading sales data: " + ex.Message);
             }
         }
+
+        static void OpenFile(string filePath)
+        {
+            try
+            {
+                if (File.Exists(filePath))
+                {
+                    // Open the file with the default associated program
+                    Process.Start(new ProcessStartInfo(filePath) { UseShellExecute = true });
+                }
+                else
+                {
+                    MessageBox.Show($"File not found: {filePath}");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening file: {ex.Message}");
+            }
+        }
+
         private void ExportButton_Click(object sender, RoutedEventArgs e)
         {
 
@@ -70,6 +95,16 @@ namespace WrapPOS.Views
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
         {
 
+        }
+
+        private void Invoice_Open_click(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.Button PDF_Openbtn && PDF_Openbtn.DataContext is Sales selectedsale)
+            {
+                string filepath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Invoices", selectedsale.SalesId.ToString(), $"{selectedsale.CustomerName} - {selectedsale.SalesDate:yyyy-MM-dd HH.mm.ss tt}.pdf");
+
+                OpenFile(filepath);
+            }
         }
     }
 }

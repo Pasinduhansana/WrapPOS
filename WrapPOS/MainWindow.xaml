@@ -7,22 +7,165 @@
         xmlns:local="clr-namespace:WrapPOS"
         mc:Ignorable="d" 
         Title="Wrap POS System" Height="680" Width="1200" WindowStartupLocation="CenterScreen">
-    
+    <Window.Resources>
+        <!-- Gradient Background for Sidebar -->
+        <LinearGradientBrush x:Key="SidebarGradientBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#2C3E50" Offset="0"/>
+            <GradientStop Color="#34495E" Offset="1"/>
+        </LinearGradientBrush>
+
+        <!-- Button Style for Modern Hover Effect -->
+        <Style x:Key="SidebarButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Border Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}"
+                                CornerRadius="6"
+                                HorizontalAlignment="Stretch">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <ContentPresenter/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
+            <!-- Hover Effect -->
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#42b490"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
     <Grid>
-        <materialDesign:Snackbar x:Name="CartSnackbar" MessageQueue="{Binding SnackbarMessageQueue}" />
+
 
         <DockPanel>
             <!-- Sidebar Navigation -->
-            <StackPanel DockPanel.Dock="Left" Width="200" Background="#2C3E50">
-                <Button Content="Products" Click="Products_Click" Foreground="White" Background="Transparent" />
-                <Button Content="Inventory" Click="Inventory_Click" Foreground="White" Background="Transparent" />
-                <Button Content="Sales" Click="Sales_Click" Foreground="White" Background="Transparent" />
-                <Button Content="Home" Click="Home_Click" Foreground="White" Background="Transparent" />
-                <Button Content="Dashboard" Click="Dashboard_Click" Foreground="White" Background="Transparent" />
+            <Grid x:Name="Sidebar" Background="{StaticResource SidebarGradientBrush}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="60"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel 
+                DockPanel.Dock="Left"
+                VerticalAlignment="Stretch"
+                Width="160">
+
+                    <StackPanel Orientation="Horizontal">
+                    <Button Content="☰"
+                Click="ToggleSidebar"
+                Foreground="White"
+                Background="Transparent"
+                FontSize="20"
+                            Height="30"
+                FontWeight="Bold"
+                HorizontalAlignment="Left"
+                Margin="8,0,0,0"
+                Padding="5,-4,5,0"
+                Cursor="Hand"/>
+                        <TextBlock Text="WrapPOS" FontSize="18" FontWeight="SemiBold" Foreground="White" Margin="25,15,0,20"/>
+                    </StackPanel>
+                    
+                    
+                    <!-- Navigation Buttons -->
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                    <Button Style="{StaticResource SidebarButtonStyle}" Click="Products_Click" HorizontalAlignment="Stretch">
+                        <Grid HorizontalAlignment="Stretch" MinWidth="140">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="40"/>
+                                <!-- Icon Column -->
+                                <ColumnDefinition Width="*"/>
+                                <!-- Text Column (Expands) -->
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="🛒" FontSize="16" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                            <TextBlock x:Name="ProductsText" Text="Products" Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                        </Grid>
+                    </Button>
+
+                    <Button Style="{StaticResource SidebarButtonStyle}" Click="Inventory_Click">
+                        <Grid HorizontalAlignment="Stretch" MinWidth="140">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="40"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="📦" FontSize="16" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                            <TextBlock x:Name="InventoryText" Text="Inventory" Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                        </Grid>
+                    </Button>
+
+                    <Button Style="{StaticResource SidebarButtonStyle}" Click="Sales_Click">
+                        <Grid HorizontalAlignment="Stretch" MinWidth="140">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="40"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="💰" FontSize="16" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                            <TextBlock x:Name="SalesText" Text="Sales" Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                        </Grid>
+                    </Button>
+
+                    <Button Style="{StaticResource SidebarButtonStyle}" Click="Home_Click">
+                        <Grid HorizontalAlignment="Stretch" MinWidth="140">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="40"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="🏠" FontSize="16" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                            <TextBlock x:Name="HomeText" Text="Home" Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                        </Grid>
+                    </Button>
+
+                    <Button Style="{StaticResource SidebarButtonStyle}" Click="Dashboard_Click">
+                        <Grid HorizontalAlignment="Stretch" MinWidth="140">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="40"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="📊" FontSize="16" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                            <TextBlock x:Name="DashboardText" Text="Dashboard" Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                        </Grid>
+                    </Button>
+                </StackPanel>
+
+
+                
             </StackPanel>
 
+                <StackPanel Grid.Row="2"  HorizontalAlignment="Stretch" DockPanel.Dock="Left" Width="160">
+                    <Button  Style="{StaticResource SidebarButtonStyle}" Click="Exit_Click" Height="40" HorizontalAlignment="Stretch">
+                        <Grid HorizontalAlignment="Stretch" MinWidth="140">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="40"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="🚪" FontSize="16" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                            <TextBlock x:Name="Logour" Text="Exit" Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                        </Grid>
+                    </Button>
+                </StackPanel>
+
+            </Grid>
             <!-- Main Content Area -->
-            <Frame Name="MainFrame" NavigationUIVisibility="Hidden" />
+            <Frame Name="MainFrame" NavigationUIVisibility="Hidden"/>
         </DockPanel>
     </Grid>
 </Window>

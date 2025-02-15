@@ -245,6 +245,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Converters\IValueConverter.cs" />
+    <Compile Include="Converters\StockToOutOfStockConverter.cs" />
     <Compile Include="Data\DatabaseService .cs" />
     <Compile Include="Models\Inventory.cs" />
     <Compile Include="Models\Sales.cs" />

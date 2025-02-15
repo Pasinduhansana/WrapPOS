@@ -22,6 +22,7 @@ using iTextSharp.text;
 using iTextSharp.text.pdf;
 using System.IO;
 using Paragraph = iTextSharp.text.Paragraph;
+using System.Diagnostics;
 
 namespace WrapPOS.Views
 {
@@ -35,6 +36,7 @@ namespace WrapPOS.Views
         List<string> TypeList = new List<string>();
         private List<string> _selectedTypes = new List<string>();
         private ObservableCollection<Product> _allProducts;
+        private ObservableCollection<Inventory> _inventory;
         private ObservableCollection<Product> CartProducts = new ObservableCollection<Product>();
         public SnackbarMessageQueue SnackbarMessageQueue { get; } = new SnackbarMessageQueue(TimeSpan.FromSeconds(3));
 
@@ -51,7 +53,18 @@ namespace WrapPOS.Views
         private void LoadProducts()
         {
             _allProducts = _databaseService.GetProducts();
+            _inventory = _databaseService.GetInventoryItems();
+
             ProductItemsControl.ItemsSource = _allProducts;
+
+            _allProducts = new ObservableCollection<Product>(
+               _allProducts.Select(p =>
+               {
+                   p.Stock = _inventory.Where(i => i.ProductId == p.ProductId).Sum(i => i.Quantity);
+                   return p;
+               })
+           );
+
 
             TypeList = _allProducts.AsEnumerable().Select(o => o.Type).Distinct().ToList();
 
@@ -102,12 +115,39 @@ namespace WrapPOS.Views
                     .ToList();
             }
         }
+
         private void AddToCart_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.Tag is Product product)
             {
-                AddToCart(product);
-                SnackbarMessageQueue.Enqueue($"Added {product.Name} to cart.");
+                if (CartProducts.Contains(product))
+                {
+                    if (product.Quantity < product.Stock)  // Prevent exceeding stock
+                    {
+                        product.Quantity++;
+                    }
+                    else
+                    {
+                        SnackbarMessageQueue.Enqueue("Cannot add more! Stock limit reached.");
+                    }
+                }
+                else
+                {
+                    if (product.Stock > 0)  // Prevent out of stock adding to cart
+                    {
+                        CartProducts.Add(product);
+                        SnackbarMessageQueue.Enqueue($"Added {product.Name} to cart.");
+                    }
+                    else
+                    {
+                        SnackbarMessageQueue.Enqueue("Out of Stock !");
+                    }
+
+
+                }
+
+                UpdateTotal();
+
             }
         }
 
@@ -125,16 +165,13 @@ namespace WrapPOS.Views
             }
         }
 
-        private void AddToCart(Product product)
-        {
-            CartProducts.Add(product);
-            UpdateTotal();
-        }
-
         private void UpdateTotal()
         {
-            decimal total = CartProducts.Sum(p => p.SellPrice*p.Quantity);
+            decimal total = CartProducts.Sum(p => p.SellPrice * p.Quantity);
             TotalAmountText.Text = $"Rs. {total:F2}";
+
+            decimal totalQty = CartProducts.Sum(p => p.Quantity);
+            TotalQuantityText.Text = $"{totalQty}";
 
         }
 
@@ -177,22 +214,91 @@ namespace WrapPOS.Views
                 MessageBox.Show("Your cart is empty!", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-
-            SaveFileDialog saveFileDialog = new SaveFileDialog
+            else if (MessageBox.Show("Are you sure want to purchase cart items ?", "Confirmation", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes) == MessageBoxResult.Yes)
             {
-                Filter = "PDF Files (*.pdf)|*.pdf",
-                Title = "Save Invoice",
-                FileName = "Invoice_" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".pdf"
-            };
 
-            if (saveFileDialog.ShowDialog() == true)
+                var sales = AddSalesFunc(CartProducts);
+                InventoryReduction(CartProducts);
+
+                string folderPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Invoices", sales.SalesId.ToString());
+
+                // Check if the folder exists, if not, create it
+                if (!Directory.Exists(folderPath))
+                {
+                    Directory.CreateDirectory(folderPath);
+                }
+                else
+                {
+                    SnackbarMessageQueue.Enqueue($"Folder already exists at: {folderPath}");
+                }
+                string invoiceFilePath = System.IO.Path.Combine(folderPath, $"{sales.CustomerName} - {sales.SalesDate:yyyy-MM-dd HH.mm.ss tt}.pdf");
+                 GenerateInvoice(invoiceFilePath,sales);
+                   LoadProducts();
+                OpenFile(invoiceFilePath);
+
+            }
+
+        }
+
+        static void OpenFile(string filePath)
+        {
+            try
             {
-                GenerateInvoice(saveFileDialog.FileName);
-                MessageBox.Show("Invoice saved successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                if (File.Exists(filePath))
+                {
+                    // Open the file with the default associated program
+                    Process.Start(new ProcessStartInfo(filePath) { UseShellExecute = true });
+                }
+                else
+                {
+                    MessageBox.Show($"File not found: {filePath}");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening file: {ex.Message}");
             }
         }
 
-        private void GenerateInvoice(string filePath)
+        private Sales AddSalesFunc(ObservableCollection<Product> products)
+        {
+            // Create a new Sales record
+            Sales newSale = new Sales
+            {
+                SalesDate = DateTime.Now,
+                TotalAmount = products.Sum(p => p.SellPrice),
+                Discount = (decimal)products.Sum(p => p.Discount),
+                NetAmount = products.Sum(p => p.SellPrice) - (decimal)products.Sum(p => p.Discount),
+                CustomerName = "Pasindu Hansana", // Can be modified to take customer input
+                ContactNo="+94 123 456 7894",
+                Delivery_Charges = 750, // Can be modified to take customer input
+                Packing_Charges = 500, // Can be modified to take customer input
+                PaymentMethod = "Cash", // Can be modified to select different payment methods
+                Profit = products.Sum(p => p.SellPrice - p.BuyPrice * p.Quantity),
+                SalesItems = new ObservableCollection<SalesItem>(products.Select(p => new SalesItem
+                {
+                    ProductId = p.ProductId,
+                    ProductName = p.Name,
+                    Description = p.Description,
+                    UnitPrice = p.SellPrice,
+                    Quantity = p.Quantity,
+                    TotalPrice = p.SellPrice * p.Quantity,
+                    BuyPrice = p.BuyPrice,
+                    UOM = p.UOM,
+                    Discount = (decimal)p.Discount,
+                    Colour = p.Colour,
+                    Barcode = p.Barcode,
+                    ImagePath = p.ImagePath
+                }))
+            };
+
+
+
+            int salesID=_databaseService.AddSales(newSale);
+            return newSale;
+        }
+
+        private void GenerateInvoice(string filePath, Sales sales)
         {
             Document doc = new Document(PageSize.A4);
             try
@@ -204,6 +310,7 @@ namespace WrapPOS.Views
                 var titleFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 20, BaseColor.BLACK);
                 var headerFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12, BaseColor.BLACK);
                 var textFont = FontFactory.GetFont(FontFactory.HELVETICA, 10, BaseColor.BLACK);
+                var textSemiboldFont = FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10, BaseColor.BLACK);
 
                 // Add Logo
                 string logoPath = "Resources/Logo.png"; // No leading slash
@@ -242,13 +349,13 @@ namespace WrapPOS.Views
                 // Invoice Details
                 PdfPTable detailsTable = new PdfPTable(2);
                 detailsTable.WidthPercentage = 100;
-                detailsTable.SetWidths(new float[] { 50f, 50f });
+                detailsTable.SetWidths(new float[] { 70f, 30f });
 
-                detailsTable.AddCell(new PdfPCell(new Phrase($"Invoice No: #000123", textFont)) { Border = 0 });
-                detailsTable.AddCell(new PdfPCell(new Phrase($"Date: {DateTime.Now:yyyy-MM-dd}", textFont)) { Border = 0 });
+                detailsTable.AddCell(new PdfPCell(new Phrase($"Invoice No: #00{sales.SalesId}{sales.SalesDate:yyMMdd}", textFont)) { Border = 0 });
+                detailsTable.AddCell(new PdfPCell(new Phrase($"Date: {sales.SalesDate:yyyy-MM-dd}", textFont)) { Border = 0 });
 
-                detailsTable.AddCell(new PdfPCell(new Phrase("Customer: John Doe", textFont)) { Border = 0 });
-                detailsTable.AddCell(new PdfPCell(new Phrase("Contact: +94 712345678", textFont)) { Border = 0 });
+                detailsTable.AddCell(new PdfPCell(new Phrase($"Customer: {sales.CustomerName}", textFont)) { Border = 0 });
+                detailsTable.AddCell(new PdfPCell(new Phrase($"Contact: {sales.ContactNo}", textFont)) { Border = 0 });
 
                 doc.Add(detailsTable);
                 doc.Add(new Paragraph("\n"));
@@ -304,8 +411,9 @@ namespace WrapPOS.Views
                 doc.Add(new Paragraph("\n"));
 
                 // Total Amount Calculation
-                decimal tax = totalAmount * 0.05m; // 5% Tax
-                decimal grandTotal = totalAmount + tax;
+                decimal Packing = sales.Packing_Charges; // 5% Tax
+                decimal Delivery = sales.Delivery_Charges; // 5% Tax
+                decimal grandTotal = totalAmount + Packing + Delivery;
 
                 PdfPTable totalTable = new PdfPTable(2);
                 totalTable.WidthPercentage = 100;
@@ -314,8 +422,11 @@ namespace WrapPOS.Views
                 totalTable.AddCell(new PdfPCell(new Phrase("Subtotal:", textFont)) { Border = 0, Padding = 5 });
                 totalTable.AddCell(new PdfPCell(new Phrase("Rs. " + totalAmount.ToString("F2"), textFont)) { Border = 0, Padding = 5, HorizontalAlignment = Element.ALIGN_RIGHT });
 
-                totalTable.AddCell(new PdfPCell(new Phrase("Tax (5%):", textFont)) { Border = 0, Padding = 5 });
-                totalTable.AddCell(new PdfPCell(new Phrase("Rs. " + tax.ToString("F2"), textFont)) { Border = 0, Padding = 5, HorizontalAlignment = Element.ALIGN_RIGHT });
+                totalTable.AddCell(new PdfPCell(new Phrase("Packing:", textFont)) { Border = 0, Padding = 5 });
+                totalTable.AddCell(new PdfPCell(new Phrase("Rs. " + Packing.ToString("F2"), textFont)) { Border = 0, Padding = 5, HorizontalAlignment = Element.ALIGN_RIGHT });
+
+                totalTable.AddCell(new PdfPCell(new Phrase("Delivery:", textFont)) { Border = 0, Padding = 5 });
+                totalTable.AddCell(new PdfPCell(new Phrase("Rs. " + Delivery.ToString("F2"), textFont)) { Border = 0, Padding = 5, HorizontalAlignment = Element.ALIGN_RIGHT });
 
                 PdfPCell grandTotalCellLabel = new PdfPCell(new Phrase("Grand Total:", headerFont))
                 {
@@ -358,12 +469,14 @@ namespace WrapPOS.Views
                 signatureTable.AddCell(new PdfPCell(new Phrase("\n\nAuthorized Signature", textFont))
                 {
                     Border = 0,
-                    HorizontalAlignment = Element.ALIGN_CENTER,
-                    PaddingBottom = 20
+                    HorizontalAlignment = Element.ALIGN_RIGHT,
+                    PaddingBottom = 20,
+                    PaddingRight=10
+                    
                 });
 
                 // Add Signature Image
-                string signaturePath = "Resources/signature.png"; 
+                string signaturePath = "Resources/signature.png";
                 Uri signatureUri = new Uri($"pack://application:,,,/{signaturePath}");
 
                 using (Stream stream = Application.GetResourceStream(signatureUri)?.Stream)
@@ -396,10 +509,18 @@ namespace WrapPOS.Views
                 doc.Close();
             }
         }
+
+        private void InventoryReduction(ObservableCollection<Product> products)
+        {
+            foreach (var item in products)
+            {
+                _databaseService.UpdateInventory_Qty(item.ProductId, item.Quantity);
+            }
+        }
     }
 
-        public class Grouping<TKey, TValue> : ObservableCollection<TValue>
-        {
+    public class Grouping<TKey, TValue> : ObservableCollection<TValue>
+    {
         public TKey Key { get; private set; }
 
         public Grouping(TKey key, IEnumerable<TValue> items) : base(items)

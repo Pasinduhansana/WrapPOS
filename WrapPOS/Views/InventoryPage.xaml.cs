@@ -26,6 +26,7 @@ using Path = System.IO.Path;
 using WrapPOS.Views;
 using OfficeOpenXml;
 using ClosedXML.Excel;
+using MaterialDesignThemes.Wpf;
 
 namespace WrapPOS.Views
 {
@@ -45,6 +46,7 @@ namespace WrapPOS.Views
         private DatabaseService _databaseService;
         private BackgroundWorker _backgroundWorker;
         private CollectionViewSource CollectionView;
+        public SnackbarMessageQueue SnackbarMessageQueue { get; } = new SnackbarMessageQueue(TimeSpan.FromSeconds(3));
 
         public InventoryPage()
         {
@@ -192,13 +194,13 @@ namespace WrapPOS.Views
                     }
                     else
                     {
-                        MessageBox.Show("Product not found.");
+                        SnackbarMessageQueue.Enqueue("Product not found.");
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error scanning product: " + ex.Message);
+                SnackbarMessageQueue.Enqueue("Error scanning product: " + ex.Message);
             }
         }
 
@@ -220,16 +222,16 @@ namespace WrapPOS.Views
                     _databaseService.AddInventory(newInventory);
                     
                     _backgroundWorker.RunWorkerAsync();
-                    MessageBox.Show("Inventory added successfully.");
+                    SnackbarMessageQueue.Enqueue("Inventory added successfully.");
                 }
                 else
                 {
-                    MessageBox.Show("Please select a product and enter a valid quantity.");
+                    SnackbarMessageQueue.Enqueue("Please select a product and enter a valid quantity.");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error adding inventory: " + ex.Message);
+                SnackbarMessageQueue.Enqueue("Error adding inventory: " + ex.Message);
             }
         }
 
@@ -239,7 +241,7 @@ namespace WrapPOS.Views
             var inventoryId = (int)button.Tag;
 
             // Your edit logic here (e.g., open an edit dialog, etc.)
-            MessageBox.Show($"Edit Inventory with ID: {inventoryId}");
+            SnackbarMessageQueue.Enqueue($"Edit Inventory with ID: {inventoryId}");
         }
 
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
@@ -249,7 +251,7 @@ namespace WrapPOS.Views
 
             _databaseService.DeleteInventory(inventoryId);
             // Your delete logic here (e.g., delete from database, etc.)
-            MessageBox.Show($"Delete Inventory with ID: {inventoryId}");
+            SnackbarMessageQueue.Enqueue($"Delete Inventory with ID: {inventoryId}");
         }
 
 

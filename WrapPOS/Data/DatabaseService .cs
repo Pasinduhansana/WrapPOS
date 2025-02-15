@@ -211,7 +211,6 @@ namespace WrapPOS.Data
             return inventoryItems;
         }
 
-
         public void AddInventory(Inventory inventory)
         {
             try
@@ -272,6 +271,35 @@ namespace WrapPOS.Data
             }
         }
 
+        public void UpdateInventory_Qty(int productID,int quantity)
+        {
+            try
+            {
+                using (var connection = new SQLiteConnection($"Data Source={dbPath}"))
+                {
+                    connection.Open();
+
+                    // SQL query to delete an inventory record
+                    string query = "Update Inventory set Quantity = (Quantity-@Quantity) WHERE ProductId = @ProductId";
+
+                    using (var command = new SQLiteCommand(query, connection))
+                    {
+                        // Add parameter to avoid SQL injection
+                        command.Parameters.AddWithValue("@ProductId", productID);
+                        command.Parameters.AddWithValue("@Quantity", quantity);
+
+                        // Execute the delete query
+                        command.ExecuteNonQuery();
+                        GetInventoryItems();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error deleting inventory: " + ex.Message);
+            }
+        }
+
         public ObservableCollection<Sales> GetSales()
         {
             var salesList = new ObservableCollection<Sales>();
@@ -310,8 +338,7 @@ namespace WrapPOS.Data
 
             return salesList;
         }
-
-        // Method to retrieve SalesItems for a specific SalesId
+       
         public ObservableCollection<SalesItem> GetSalesItemsBySalesId(int salesId)
         {
             var salesItemsList = new ObservableCollection<SalesItem>();
@@ -358,6 +385,73 @@ namespace WrapPOS.Data
             }
 
             return salesItemsList;
+        }  // Method to retrieve SalesItems for a specific SalesId
+
+        public int AddSales(Sales sale)
+        {
+            using (var connection = new SQLiteConnection($"Data Source={dbPath}"))
+            {
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        // Insert Sale
+                        var insertSalesQuery = @"INSERT INTO Sales (SalesDate, TotalAmount, Discount, NetAmount, CustomerName, PaymentMethod, Profit) 
+                                        VALUES (@SalesDate, @TotalAmount, @Discount, @NetAmount, @CustomerName, @PaymentMethod, @Profit);
+                                        SELECT last_insert_rowid();";
+
+                        using (var command = new SQLiteCommand(insertSalesQuery, connection, transaction))
+                        {
+                            command.Parameters.AddWithValue("@SalesDate", sale.SalesDate);
+                            command.Parameters.AddWithValue("@TotalAmount", sale.TotalAmount);
+                            command.Parameters.AddWithValue("@Discount", sale.Discount);
+                            command.Parameters.AddWithValue("@NetAmount", sale.NetAmount);
+                            command.Parameters.AddWithValue("@CustomerName", (object)sale.CustomerName ?? DBNull.Value);
+                            command.Parameters.AddWithValue("@PaymentMethod", sale.PaymentMethod);
+                            command.Parameters.AddWithValue("@Profit", sale.Profit);
+
+                            sale.SalesId = Convert.ToInt32(command.ExecuteScalar());
+                        }
+
+                        // Insert Sales Items
+                        var insertSalesItemQuery = @"INSERT INTO SalesItems (SalesId, ProductId, ProductName, Description, UnitPrice, Quantity, TotalPrice, BuyPrice, UOM, Discount, Colour, Barcode, ImagePath) 
+                                           VALUES (@SalesId, @ProductId, @ProductName, @Description, @UnitPrice, @Quantity, @TotalPrice, @BuyPrice, @UOM, @Discount, @Colour, @Barcode, @ImagePath);";
+
+                        foreach (var item in sale.SalesItems)
+                        {
+                            using (var command = new SQLiteCommand(insertSalesItemQuery, connection, transaction))
+                            {
+                                command.Parameters.AddWithValue("@SalesId", sale.SalesId);
+                                command.Parameters.AddWithValue("@ProductId", item.ProductId);
+                                command.Parameters.AddWithValue("@ProductName", item.ProductName);
+                                command.Parameters.AddWithValue("@Description", (object)item.Description ?? DBNull.Value);
+                                command.Parameters.AddWithValue("@UnitPrice", item.UnitPrice);
+                                command.Parameters.AddWithValue("@Quantity", item.Quantity);
+                                command.Parameters.AddWithValue("@TotalPrice", item.TotalPrice);
+                                command.Parameters.AddWithValue("@BuyPrice", item.BuyPrice);
+                                command.Parameters.AddWithValue("@UOM", (object)item.UOM ?? DBNull.Value);
+                                command.Parameters.AddWithValue("@Discount", item.Discount);
+                                command.Parameters.AddWithValue("@Colour", (object)item.Colour ?? DBNull.Value);
+                                command.Parameters.AddWithValue("@Barcode", (object)item.Barcode ?? DBNull.Value);
+                                command.Parameters.AddWithValue("@ImagePath", (object)item.ImagePath ?? DBNull.Value);
+
+                                command.ExecuteNonQuery();
+                            }
+                        }
+
+                        transaction.Commit();
+                        return sale.SalesId;
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+            }
         }
+
+
     }
 }

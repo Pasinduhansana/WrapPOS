@@ -23,6 +23,12 @@ namespace WrapPOS.Models
 
         public string CustomerName { get; set; }
 
+        public string ContactNo { get; set; }
+
+        public decimal Delivery_Charges { get; set; }
+
+        public decimal Packing_Charges { get; set; }
+
         [Required]
         public string PaymentMethod { get; set; }
 

@@ -9,6 +9,14 @@
       d:DesignHeight="600" d:DesignWidth="1000"
       Title="Inventory Management" Background="White" FontFamily="poppins">
 
+
+    <Page.Resources>
+        <LinearGradientBrush x:Key="SnackbarGradientBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#2d2d2d" Offset="0" />
+            <GradientStop Color="#525252" Offset="1" />
+        </LinearGradientBrush>
+    </Page.Resources>
+
     <Grid Margin="20">
         <StackPanel Orientation="Vertical" Margin="20">
 
@@ -181,5 +189,24 @@
 
             </Grid>
         </StackPanel>
+
+        <materialDesign:Snackbar x:Name="CartSnackbar" 
+                         Background="{StaticResource SnackbarGradientBrush}" 
+                         BorderBrush="Transparent" 
+                         BorderThickness="0" 
+                         Foreground="White" 
+                         MessageQueue="{Binding SnackbarMessageQueue}"  
+                         Grid.RowSpan="6" 
+                         Grid.ColumnSpan="10">
+
+
+            <!-- Add shadow effect -->
+            <materialDesign:Snackbar.Effect>
+                <DropShadowEffect Color="Black" BlurRadius="10" Direction="270" ShadowDepth="5" Opacity="0.2"/>
+            </materialDesign:Snackbar.Effect>
+
+
+        </materialDesign:Snackbar>
+
     </Grid>
 </Page>

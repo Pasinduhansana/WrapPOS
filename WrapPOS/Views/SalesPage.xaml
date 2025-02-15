@@ -40,28 +40,65 @@
         <Grid>
             <ListView Name="SalesListView" Grid.Column="0" Margin="0,20,0,20"  
               HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
-              ScrollViewer.HorizontalScrollBarVisibility="Auto" 
-              SelectionMode="Single" ItemsSource="{Binding Sales, IsAsync=True}">
+              ScrollViewer.HorizontalScrollBarVisibility="Auto"  Width="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto"
+              SelectionMode="Single" ItemsSource="{Binding Sales}">
 
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <Expander Header="{Binding Sales}" IsExpanded="False">
-                            <Expander.HeaderTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <TextBlock Text="Sale ID: " FontWeight="Bold" />
-                                        <TextBlock Text="{Binding SalesId}" Margin="5,0,5,0" />
-                                        <TextBlock Text="Date: " FontWeight="Bold" />
-                                        <TextBlock Text="{Binding SalesDate}" Margin="5,0,15,0" />
-                                        <TextBlock Text="Total: $" FontWeight="Bold" />
-                                        <TextBlock Text="{Binding TotalAmount}" Margin="5,0,15,0" />
-                                        <TextBlock Text="Net Amount: $" FontWeight="Bold" />
-                                        <TextBlock Text="{Binding NetAmount}" Margin="5,0,15,0" />
-                                        <TextBlock Text="Profit: $" FontWeight="Bold" />
-                                        <TextBlock Text="{Binding Profit}" Margin="5,0,15,0" />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </Expander.HeaderTemplate>
+                            <Expander x:Name="Expander" IsExpanded="False" Width="Auto" Padding="0" HorizontalAlignment="Stretch" Background="LightCyan" Style="{DynamicResource MaterialDesignExpander}">
+                            <Expander.Header>
+
+                                    <Grid Width="Auto" HorizontalAlignment="Stretch" Height="60" Margin="0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="60" />
+                                            <ColumnDefinition Width="2*" />
+                                            <ColumnDefinition Width="1*" />
+                                            <ColumnDefinition Width="1*" />
+                                            <ColumnDefinition Width="1*" />
+                                            <ColumnDefinition Width="1*" />
+                                            <ColumnDefinition Width="1*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <!-- Sales ID -->
+                                        <StackPanel Grid.Column="0" HorizontalAlignment="Left" Margin="10">
+                                            <TextBlock Text="Sale ID" FontWeight="Normal" FontSize="12" Foreground="Gray"/>
+                                            <TextBlock Text="{Binding SalesId}" FontWeight="SemiBold" FontSize="15" Foreground="Black" Margin="0,5"/>
+                                        </StackPanel>
+
+                                        <!-- Customer Name -->
+                                        <StackPanel Grid.Column="1" HorizontalAlignment="Left" Margin="10">
+                                            <TextBlock Text="Customer Name" FontWeight="Normal" FontSize="12" Foreground="Gray"/>
+                                            <TextBlock Text="{Binding CustomerName}" FontWeight="SemiBold" FontSize="14" Foreground="Black" Margin="0,5"/>
+                                        </StackPanel>
+
+                                        <!-- Sales Date -->
+                                        <StackPanel Grid.Column="2" HorizontalAlignment="Left" Margin="10">
+                                            <TextBlock Text="Date &amp; Time" FontWeight="Normal" FontSize="12" Foreground="Gray"/>
+                                            <TextBlock Text="{Binding SalesDate}" FontWeight="SemiBold" FontSize="14" Foreground="Black" Margin="0,5"/>
+                                        </StackPanel>
+
+                                        <!-- Total Amount -->
+                                        <StackPanel Grid.Column="3" HorizontalAlignment="Left" Margin="10">
+                                            <TextBlock Text="Total ($)" FontWeight="Normal" FontSize="12" Foreground="Gray"/>
+                                            <TextBlock Text="{Binding TotalAmount}" FontWeight="SemiBold" FontSize="14" Foreground="Black" Margin="0,5"/>
+                                        </StackPanel>
+
+                                        <!-- Net Amount -->
+                                        <StackPanel Grid.Column="4" Grid.Row="1" HorizontalAlignment="Left" Margin="10">
+                                            <TextBlock Text="Net Amount ($)" FontWeight="Normal" FontSize="12" Foreground="Gray"/>
+                                            <TextBlock Text="{Binding NetAmount}" FontWeight="SemiBold" FontSize="14" Foreground="Black" Margin="0,5"/>
+                                        </StackPanel>
+
+                                        <!-- Profit -->
+                                        <StackPanel Grid.Column="5" Grid.Row="1" HorizontalAlignment="Left" Margin="10">
+                                            <TextBlock Text="Profit ($)" FontWeight="Normal" FontSize="12" Foreground="Gray"/>
+                                            <TextBlock Text="{Binding Profit}" FontWeight="SemiBold" FontSize="14" Foreground="Black" Margin="0,5"/>
+                                        </StackPanel>
+
+                                        <Button x:Name="PDF_Openbtn" Grid.Column="6" Content="{materialDesign:PackIcon Kind=OpenInNew, Size=20}" Width="35" Height="35" ToolTip="Click here to View Invoice" Style="{DynamicResource MaterialDesignIconButton}" Click="Invoice_Open_click"/>
+                                    </Grid>
+
+                                </Expander.Header>
 
                             <!-- Expander Content - Sales Items List -->
                             <ListView ItemsSource="{Binding SalesItems}">
